@@ -1,0 +1,3016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack -- 3D Creator</title>
+<link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0C0C'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23646973'/%3E%3Cstop offset='1' stop-color='%23BBCCD7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='32' y='46' font-family='Arial,sans-serif' font-size='34' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EJ%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* ===== Kanit (self-hosted via jsDelivr fontsource, weights 300-900) ===== */
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 300; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-300-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 500; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-500-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 600; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 700; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 800; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-800-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Kanit'; font-style: normal; font-weight: 900; font-display: swap; src: url(https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-900-normal.woff2) format('woff2'); }
+
+  /* ===== Global reset ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== Global background ===== */
+  html, body, #root { background-color: #0C0C0C; }
+
+  /* ===== Global font（--site-font 由后台「字体」页签动态切换） ===== */
+  body {
+    font-family: var(--site-font, 'Kanit'), 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* ===== Hero heading gradient text ===== */
+  .hero-heading {
+    background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ===== Project detail coverflow gallery（对齐 circular-gallery-preview） ===== */
+  .cf-stage {
+    position: relative; height: 600px; overflow: hidden;
+    touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab;
+    background: radial-gradient(1200px 600px at 50% 30%, #1a1d24 0%, #0c0c0c 65%);
+  }
+  .cf-stage[data-dragging="1"] { cursor: grabbing; }
+  .cf-card {
+    position: absolute; top: 50%; left: 50%;
+    width: 230px; height: 295px; margin-left: -115px; margin-top: -147px;
+    will-change: transform, opacity; transform-origin: center; cursor: pointer;
+    animation: cfCardIn 1.4s ease both;
+  }
+  .cf-stage--wide { height: 634px; background: transparent; }
+  .cf-card--wide {
+    width: 432px; height: 274px; margin-left: -216px; margin-top: -137px;
+    cursor: grab;
+  }
+  .cf-card--wide .cf-pic { border-radius: 16px; }
+  @keyframes cfCardIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; } }
+  .cf-pic {
+    position: absolute; inset: 0;
+    border-radius: calc(230px * 0.05); overflow: hidden;
+    transition: transform .28s ease, filter .28s ease, box-shadow .28s ease;
+  }
+  .cf-card:hover .cf-pic {
+    transform: translateY(-10px) scale(1.03);
+    filter: brightness(1.08);
+    box-shadow: 0 18px 44px rgba(0,0,0,.5);
+  }
+  .cf-pic img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; filter: saturate(0.95); }
+  .cf-shine {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,0.35) 100%);
+  }
+  .cf-float {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(6,6,8,.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: cfFadeIn .25s ease;
+  }
+  .cf-float img {
+    max-width: 96%; max-height: 96%;
+    object-fit: contain;
+    border-radius: 18px;
+    box-shadow: 0 30px 90px rgba(0,0,0,.7);
+    animation: cfZoomIn .3s ease;
+  }
+  @keyframes cfFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes cfZoomIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+  /* ===== Project 详情弹窗窗口（参考 gallery 预览样式） ===== */
+  .gm-window { animation: cfZoomIn .3s ease; }
+  .gm-navbtn { background: rgba(0,0,0,.4); backdrop-filter: blur(6px); transition: background .2s; }
+  .gm-navbtn:hover { background: rgba(0,0,0,.65); }
+  .gm-thumb { transition: opacity .2s; }
+  .gm-thumb:hover { opacity: .8; }
+  .gm-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .gm-scroll::-webkit-scrollbar { display: none; }
+  .cf-close {
+    position: absolute; top: 16px; right: 16px; width: 40px; height: 40px;
+    border-radius: 50%; border: 0; background: transparent; color: #fff;
+    cursor: pointer; display: grid; place-items: center; opacity: .8;
+  }
+  .cf-close:hover { opacity: 1; }
+  @media (max-width: 640px) {
+    .cf-stage { height: 440px; }
+    .cf-card { width: 170px; height: 218px; margin-left: -85px; margin-top: -109px; }
+    .cf-stage--wide { height: 475px; }
+    .cf-card--wide { width: 317px; height: 202px; margin-left: -158px; margin-top: -101px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/framer-motion@12.38.0/dist/framer-motion.js"></script>
+<script>window.react = window.React;</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.4/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useRef, useEffect, useMemo } = React;
+const { motion, useScroll, useTransform } = window.Motion;
+
+/* ============================================================
+   运行时站点配置 SITE：默认值见各数据数组，已在下方填充；可在隐藏后台修改
+   ============================================================ */
+let SITE = {
+  heroTitle: '',
+  heroSub: '',
+  nav: [],
+  contactLabel: '',
+  contactUrl: '#contact',
+  aboutHeading: '',
+  about1: '',
+  about2: '',
+  replayLabel: '',
+  servicesHeading: '',
+  projectsHeading: '',
+  liveLabel: '',
+  heroPortrait: '',
+  aboutImages: {},
+  marquee: [],
+  services: [],
+  projects: [],
+};
+(function loadSavedConfig() {
+  try {
+    const raw = localStorage.getItem('ling-portfolio-config');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      SITE = Object.assign(SITE, saved);
+    }
+  } catch (e) { /* 忽略损坏配置 */ }
+})();
+
+/* ============================================================
+   Placeholder feedback for demo links (keeps every button live)
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  let el = document.getElementById('demo-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'demo-toast';
+    el.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:linear-gradient(123deg,#18011F 7%,#B600A8 37%,#7621B0 72%,#BE4C00 100%);color:#fff;border-radius:9999px;padding:10px 22px;font-family:Kanit,sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;z-index:9999;opacity:0;transition:opacity .3s ease;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.35);';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 2400);
+}
+
+/* ============================================================
+   FadeIn — Framer Motion scroll-reveal wrapper
+   ============================================================ */
+const FadeIn = ({ children, delay = 0, duration = 0.7, x = 0, y = 30, as = 'div', className = '', style = {} }) => {
+  const Comp = useMemo(
+    () => (typeof motion.create === 'function' ? motion.create(as) : motion(as)),
+    [as]
+  );
+  return (
+    <Comp
+      className={className}
+      style={style}
+      initial={{ opacity: 0, x, y }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: '50px', amount: 0 }}
+      transition={{ duration, delay, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      {children}
+    </Comp>
+  );
+};
+
+/* ============================================================
+   Magnet — mouse-following magnetic hover effect
+   ============================================================ */
+const Magnet = ({
+  children,
+  padding = 100,
+  strength = 2,
+  activeTransition = 'transform 0.3s ease-out',
+  inactiveTransition = 'transform 0.6s ease-in-out',
+  className = '',
+  style = {},
+}) => {
+  const ref = useRef(null);
+  const [isActive, setIsActive] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distX = Math.abs(e.clientX - centerX);
+    const distY = Math.abs(e.clientY - centerY);
+    const active = distX < rect.width / 2 + padding && distY < rect.height / 2 + padding;
+    setIsActive(active);
+    if (active) {
+      setPosition({
+        x: (e.clientX - centerX) / strength,
+        y: (e.clientY - centerY) / strength,
+      });
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { setIsActive(false); setPosition({ x: 0, y: 0 }); }}
+      className={className}
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        transition: isActive ? activeTransition : inactiveTransition,
+        willChange: 'transform',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* ============================================================
+   AnimatedText — character-by-character scroll-reveal
+   ============================================================ */
+const Character = ({ char, progress, range }) => {
+  const opacity = useTransform(progress, range, [0.2, 1]);
+  return (
+    <span className="relative inline-block">
+      <span className="invisible">{char}</span>
+      <motion.span style={{ opacity }} className="absolute left-0 top-0">{char}</motion.span>
+    </span>
+  );
+};
+
+const AnimatedText = ({ text, className = '' }) => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.8', 'end 0.2'] });
+  const words = text.split(' ');
+  return (
+    <p ref={ref} className={className}>
+      {words.map((word, wi) => (
+        <span key={wi} className="inline-block">
+          {word.split('').map((char, ci) => {
+            const start = wi / words.length + ci / (word.length * words.length);
+            const end = start + 1 / words.length;
+            return <Character key={ci} char={char} progress={scrollYProgress} range={[start, end]} />;
+          })}
+          {wi < words.length - 1 ? <span>&nbsp;</span> : null}
+        </span>
+      ))}
+    </p>
+  );
+};
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+const ContactButton = ({ className = '' }) => (
+  <a
+    href={SITE.contactUrl || '#contact'}
+    onClick={(e) => { e.preventDefault(); const el = document.getElementById('contact'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+    className={`inline-block rounded-full text-white font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base ${className}`}
+    style={{
+      background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
+      boxShadow: '0px 4px 4px rgba(181, 1, 167, 0.25), 4px 4px 12px #7721B1 inset',
+      outline: '2px solid #FFFFFF',
+      outlineOffset: '-3px',
+    }}
+  >
+    {SITE.contactLabel || 'Contact Me'}
+  </a>
+);
+
+const LiveProjectButton = ({ projectIndex, className = '' }) => (
+  <a
+    href={`#project-0${projectIndex + 1}`}
+    onClick={() => { savedScrollY = window.scrollY; }}
+    className={`inline-block rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base hover:bg-[#D7E2EA]/10 transition-colors duration-200 ${className}`}
+  >
+    {SITE.liveLabel || 'Live Project'}
+  </a>
+);
+
+/* ============================================================
+   1. HERO SECTION
+   ============================================================ */
+/* ============================================================
+   HERO CRYSTAL BALL — CrystalizedBall (React Bits Pro) 原生 WebGL2 移植
+   注入到作品集 hero：替换原人物图。IIFE 包裹避免与主文件命名冲突。
+   ============================================================ */
+const CrystalBallBoot = (() => {
+  const BALL_PRESETS = {
+    plasma:  { color:'#F25BD0', strands:6, crackle:0.85, flares:0.65, glow:0.9,  sparks:0.6, particleCount:15000, fill:0.5, motion:'rise',  particleShape:'square', depth:0.6, sway:0.5, twinkle:0.5, haze:0.7, dustSpeed:1 },
+    aurora:  { color:'#5CFFC8', strands:5, crackle:0.6,  flares:0.5,  glow:0.8,  sparks:0.45, particleCount:15000, fill:0.5, motion:'rise',  particleShape:'square', depth:0.6, sway:0.5, twinkle:0.5, haze:0.7, dustSpeed:1 },
+    nebula:  { color:'#9478FF', strands:6, crackle:1,    flares:0.5,  glow:0.9,  sparks:0.6, particleCount:18000, fill:0.45, motion:'rise', particleShape:'square', depth:0.5, sway:0.4, twinkle:0.6, haze:0.8, dustSpeed:1.2 },
+    ember:   { color:'#FF8A2A', strands:5, crackle:0.9,  flares:0.8,  glow:1,    sparks:0.8, particleCount:12000, fill:0.35, motion:'rise', particleShape:'round', depth:0.7, sway:0.3, twinkle:0.7, haze:0.9, dustSpeed:1.6 },
+    frost:   { color:'#BFE6FF', strands:3, crackle:0.3,  flares:0.3,  glow:0.6,  sparks:0.2, particleCount:16000, fill:0.6, motion:'fall',  particleShape:'round', depth:0.8, sway:0.4, twinkle:0.4, haze:0.5, dustSpeed:0.7 },
+    solar:   { color:'#FFD36E', strands:6, crackle:0.7,  flares:1,    glow:1.1,  sparks:0.5, particleCount:15000, fill:0.55, motion:'orbit', particleShape:'square', depth:0.6, sway:0.7, twinkle:0.5, haze:0.8, dustSpeed:1 },
+    eclipse: { color:'#FFFFFF', strands:4, crackle:0.5,  flares:0.4,  glow:0.7,  sparks:0.35, particleCount:14000, fill:0.5, motion:'drift', particleShape:'square', depth:0.7, sway:0.5, twinkle:0.5, haze:0.5, dustSpeed:0.8 },
+    abyss:   { color:'#3F7BFF', strands:5, crackle:0.55, flares:0.6,  glow:0.9,  sparks:0.4, particleCount:20000, fill:0.8, motion:'orbit', particleShape:'round', depth:0.8, sway:0.8, twinkle:0.5, haze:0.6, dustSpeed:0.9 }
+  };
+  const MOTIONS = { rise:0, fall:1, drift:2, orbit:3 };
+  const SHAPES = { square:0, round:1 };
+  const MAX_STRANDS = 8, MAX_ARCS = 4, MAX_PARTICLES = 40000;
+  const STATE_WIDTH = 256;
+  const PIXEL_BUDGET = 4.5e6;
+  const INTRO_SECONDS = 2.2, SETTLE_SECONDS = 7;
+  const WHITE = [1,1,1], BLACK = [0,0,0];
+
+  const clamp = (v,a,b)=>Math.min(Math.max(v,a),b);
+  const smooth = (e0,e1,v)=>{ const t=clamp((v-e0)/(e1-e0),0,1); return t*t*(3-2*t); };
+  const easeOut = t=>1-Math.pow(1-t,3);
+  const mixColor = (a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+  const wrapAngle = a=>a-Math.PI*2*Math.floor((a+Math.PI)/(Math.PI*2));
+
+  const parseColor = (value,fallback)=>{
+    try{
+      const c = document.createElement('canvas').getContext('2d');
+      if(!c) return fallback;
+      c.fillStyle='#000000'; c.fillStyle=value;
+      const r = c.fillStyle;
+      if(r.startsWith('#')){
+        const n = parseInt(r.slice(1),16);
+        return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255];
+      }
+      const p = r.match(/[\d.]+/g);
+      if(!p||p.length<3) return fallback;
+      return [Number(p[0])/255, Number(p[1])/255, Number(p[2])/255];
+    }catch(e){ return fallback; }
+  };
+  const toLinear = c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+  const toGamma = c=>c<=0.0031308?c*12.92:1.055*Math.pow(c,1/2.4)-0.055;
+  const toOklab = rgb=>{
+    const [r,g,b]=rgb.map(toLinear);
+    const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b);
+    const m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b);
+    const s=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+    return [0.2104542553*l+0.793617785*m-0.0040720468*s, 1.9779984951*l-2.428592205*m+0.4505937099*s, 0.0259040371*l+0.7827717662*m-0.808675766*s];
+  };
+  const fromOklab = ([L,a,b])=>{
+    const l=Math.pow(L+0.3963377774*a+0.2158037573*b,3);
+    const m=Math.pow(L-0.1055613458*a-0.0638541728*b,3);
+    const s=Math.pow(L-0.0894841775*a-1.291485548*b,3);
+    return [4.0767416621*l-3.3077115913*m+0.2309699292*s, -1.2684380046*l+2.6097574011*m-0.3413193965*s, -0.0041960863*l-0.7034186147*m+1.707614701*s].map(v=>clamp(toGamma(clamp(v,0,1)),0,1));
+  };
+  const blend=(a,b,t)=>fromOklab(mixColor(toOklab(a),toOklab(b),t));
+  const shift=(rgb,hue,lightness,chroma)=>{
+    const [L,a,b]=toOklab(rgb);
+    const c=Math.hypot(a,b)*chroma;
+    const h=Math.atan2(b,a)+(hue*Math.PI)/180;
+    return fromOklab([clamp(L+lightness,0,1),c*Math.cos(h),c*Math.sin(h)]);
+  };
+  const withLightness=(rgb,hue,lightness,chroma)=>{
+    const [,a,b]=toOklab(rgb);
+    const c=Math.max(Math.hypot(a,b)*chroma,0.02);
+    const h=Math.atan2(b,a)+(hue*Math.PI)/180;
+    return fromOklab([clamp(lightness,0,1),c*Math.cos(h),c*Math.sin(h)]);
+  };
+  const buildPalette=(color,light)=>{
+    if(light){
+      const ink=withLightness(color,0,Math.min(toOklab(color)[0],0.62),1.15);
+      return { rim:ink, rimHot:ink, rimMid:ink, rimDeep:withLightness(color,0,0.72,0.8),
+        spark:withLightness(color,0,0.6,1.2), sparkGlow:withLightness(color,0,0.78,0.8),
+        haze:withLightness(color,0,0.8,0.6), edge:withLightness(color,0,0.72,0.8),
+        tones:[withLightness(color,0,0.56,1.1),withLightness(color,16,0.6,1.05),withLightness(color,-16,0.5,1.1),withLightness(color,0,0.66,0.9),withLightness(color,0,0.74,0.7)] };
+    }
+    return { rim:color, rimHot:mixColor(color,WHITE,0.72), rimMid:mixColor(color,BLACK,0.15), rimDeep:mixColor(color,BLACK,0.45),
+      spark:mixColor(color,WHITE,0.45), sparkGlow:shift(color,0,-0.15,1), haze:mixColor(color,BLACK,0.6),
+      edge:shift(color,0,-0.3,0.9),
+      tones:[shift(color,0,-0.06,1),shift(color,16,-0.02,1),shift(color,-16,-0.12,1.05),shift(blend(color,WHITE,0.25),0,0.04,1),blend(color,WHITE,0.7)] };
+  };
+  const seeded=start=>{
+    let state=start>>>0;
+    return ()=>{
+      state=(state+0x6d2b79f5)>>>0;
+      let t=state;
+      t=Math.imul(t^(t>>>15),t|1);
+      t^=t+Math.imul(t^(t>>>7),t|61);
+      return ((t^(t>>>14))>>>0)/4294967296;
+    };
+  };
+  const buildStrands=()=>{
+    const random=seeded(99);
+    const bands=[[6,12,0.6,1.6],[18,34,1.5,3.5],[40,70,3,7],[80,130,6,12]];
+    const data={harmonics:[],rates:[],phases:[],flareHarmonics:[],flareRates:[],flarePhases:[]};
+    for(let s=0;s<MAX_STRANDS;s++){
+      bands.forEach(([lo,hi,sl,fa])=>{
+        data.harmonics.push(Math.round(lo+random()*(hi-lo)));
+        data.rates.push((sl+random()*(fa-sl))*(random()<0.5?-1:1));
+        data.phases.push(random()*Math.PI*2);
+      });
+      for(let j=0;j<3;j++){
+        data.flareHarmonics.push(4+Math.floor(random()*6));
+        data.flareRates.push((0.4+random()*0.8)*(random()<0.5?-1:1));
+        data.flarePhases.push(random()*Math.PI*2);
+      }
+      const lead=s===0;
+      data.flareHarmonics.push(lead?0.75:0.95+random()*0.3);
+      data.flareRates.push(lead?1.15:0.8+random()*0.2);
+      data.flarePhases.push(lead?1:0.7+random()*0.25);
+    }
+    return data;
+  };
+  const buildDust=count=>{
+    const random=seeded(1337);
+    const rows=Math.max(1,Math.ceil(count/STATE_WIDTH));
+    const home=new Float32Array(STATE_WIDTH*rows*4);
+    const seed=new Float32Array(STATE_WIDTH*rows*4);
+    let k=0,guard=0;
+    while(k<count&&guard<count*80){
+      guard++;
+      let x,y,tone;
+      if(random()<0.28){
+        const angle=random()*Math.PI*2;
+        const radius=0.87+Math.sqrt(random())*0.105;
+        x=Math.cos(angle)*radius; y=Math.sin(angle)*radius;
+        if(random()>smooth(-0.6,0.3,-y)) continue;
+        const q=random();
+        tone=q<0.5?3:q<0.8?2:1;
+      } else {
+        x=random()*2-1; y=random()*2-1;
+        const radius=Math.hypot(x,y);
+        if(radius>0.975) continue;
+        const bowl=Math.pow(smooth(-0.25,0.85,-y),1.3);
+        const band=smooth(0.66,0.96,radius)*smooth(-0.7,0.3,-y);
+        const weight=Math.max(bowl,band*0.9);
+        if(random()>0.012+0.988*weight) continue;
+        if(weight<0.12) tone=4;
+        else { const q=random(); tone=q<0.32?0:q<0.52?1:q<0.8?2:3; }
+      }
+      const chord=Math.sqrt(Math.max(0,0.95-x*x-y*y));
+      home[k*4]=x; home[k*4+1]=y; home[k*4+2]=(random()*2-1)*chord; home[k*4+3]=tone;
+      seed[k*4]=tone===4?1.8:random()<0.22?2.1:1.3;
+      seed[k*4+1]=random();
+      seed[k*4+2]=2.5+random()*3.5;
+      seed[k*4+3]=0.16+random()*0.26;
+      k++;
+    }
+    return {home,seed,count:k,rows};
+  };
+
+  /* ---------- GLSL ---------- */
+  const passVertex=`#version 300 es
+in vec2 position;
+in vec2 uv;
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 0.0, 1.0);
+}
+`;
+  const hashChunk=`
+uint scramble(uint v) {
+  v = v * 747796405u + 2891336453u;
+  uint w = ((v >> ((v >> 28u) + 4u)) ^ v) * 277803737u;
+  return (w >> 22u) ^ w;
+}
+
+float random(uint v) {
+  return float(scramble(v)) * (1.0 / 4294967295.0);
+}
+`;
+  const dustChunk=`
+uniform float uDustTime;
+uniform vec2 uTurn;
+uniform float uMotion;
+uniform float uFill;
+
+vec3 settle(vec3 p, out float spread) {
+  float bend = exp2((0.5 - uFill) * 1.8);
+  float h = clamp((p.y + 1.0) * 0.5, 0.0, 1.0);
+  float y = 2.0 * pow(h, bend) - 1.0;
+  float from = sqrt(max(1.0 - p.y * p.y, 1e-4));
+  float to = sqrt(max(1.0 - y * y, 0.0));
+  spread = clamp(bend * pow(max(h, 1e-3), bend - 1.0) * to / from, 0.25, 1.0);
+  return vec3(p.xz * (to / from), y).xzy;
+}
+
+vec3 drift(vec4 home, vec4 seed, uint id, out float life, out float spread) {
+  vec3 p = settle(home.xyz, spread);
+  float t = uDustTime;
+  float u = fract(t / seed.z + seed.y);
+  life = sin(3.14159265 * u);
+  float travel = seed.w;
+  if (uMotion < 0.5) {
+    p.y += travel * (u - 0.5);
+  } else if (uMotion < 1.5) {
+    p.y -= travel * (u - 0.5);
+  } else if (uMotion < 2.5) {
+    p += 0.045 * vec3(
+      sin(t * 0.37 + seed.y * 17.0) + 0.5 * sin(t * 0.83 + seed.z * 5.0),
+      sin(t * 0.29 + seed.z * 11.0) + 0.5 * sin(t * 0.61 + seed.w * 7.0),
+      sin(t * 0.33 + seed.w * 23.0)
+    );
+  } else {
+    float loop = t * (0.6 + 0.9 * random(id * 7u + 3u)) * (random(id * 7u + 10u) < 0.5 ? -1.0 : 1.0) + seed.y * 6.2831853;
+    p.xy += (0.025 + 0.05 * random(id * 7u + 16u)) * vec2(cos(loop), sin(loop));
+  }
+  float wobble = 0.002 + 0.006 * random(id * 7u + 1u);
+  float w1 = 0.8 + 2.4 * random(id * 7u + 2u);
+  float w2 = 0.8 + 2.4 * random(id * 7u + 4u);
+  p += wobble * vec3(sin(t * w1 + seed.y * 40.0), cos(t * w2 + seed.z * 30.0), sin(t * (w1 + w2) * 0.5 + seed.w * 20.0));
+  float cy = cos(uTurn.x);
+  float sy = sin(uTurn.x);
+  p.xz = mat2(cy, -sy, sy, cy) * p.xz;
+  float cx = cos(uTurn.y);
+  float sx = sin(uTurn.y);
+  p.yz = mat2(cx, -sx, sx, cx) * p.yz;
+  return p;
+}
+`;
+  const fieldFragment=`#version 300 es
+precision highp float;
+
+uniform vec2 uCenter;
+uniform float uRadius;
+uniform float uDpr;
+uniform float uLine;
+uniform float uTime;
+uniform float uFrame;
+uniform float uBins;
+uniform float uStrands;
+uniform float uCrackle;
+uniform float uFlares;
+uniform float uGlow;
+uniform float uHaze;
+uniform float uFill;
+uniform float uPresence;
+uniform float uUnfold;
+uniform float uBloom;
+uniform float uInside;
+uniform float uEncode;
+uniform vec3 uRim;
+uniform vec3 uRimHot;
+uniform vec3 uRimMid;
+uniform vec3 uRimDeep;
+uniform vec3 uSpark;
+uniform vec3 uSparkGlow;
+uniform vec3 uHazeColor;
+uniform vec3 uEdgeColor;
+uniform vec4 uHeat;
+uniform vec4 uHarmonics[8];
+uniform vec4 uRates[8];
+uniform vec4 uPhases[8];
+uniform vec4 uFlareHarmonics[8];
+uniform vec4 uFlareRates[8];
+uniform vec4 uFlarePhases[8];
+uniform vec4 uArcs[4];
+
+out vec4 fragColor;
+`+hashChunk+`
+const float PI = 3.14159265;
+const float TAU = 6.28318531;
+const vec4 AMPS = vec4(0.35, 0.3, 0.22, 0.13);
+
+float bell(float d, float w) {
+  float x = d / w;
+  return exp(-x * x);
+}
+
+float pool(vec2 q) {
+  float t = length(q - vec2(0.0, mix(-1.0, -0.66, uFill))) / mix(0.8, 1.35, uFill);
+  return t < 0.6 ? mix(0.5, 0.22, t / 0.6) : mix(0.22, 0.0, clamp((t - 0.6) / 0.4, 0.0, 1.0));
+}
+
+void main() {
+  vec2 p = gl_FragCoord.xy / uDpr - uCenter;
+  float r = length(p);
+  float R = uRadius;
+  float theta = atan(p.y, p.x);
+  float lift = p.y / max(r, 1e-3);
+  float topDim = 1.0 - 0.35 * pow(max(lift, 0.0), 1.5);
+  vec3 col = vec3(0.0);
+  float hot = 0.0;
+  uint frame = uint(uFrame);
+
+  if (r < R) {
+    vec2 q = p / R;
+    float chord = sqrt(max(1.0 - dot(q, q), 0.0));
+    float haze = pool(q) * (0.55 + 0.45 * chord);
+    col += uHazeColor * haze * uHaze * uInside;
+    float e = length(q - vec2(0.0, 0.2)) / 1.2;
+    float edge = 0.5 * pow(smoothstep(0.62, 1.0, e), 1.4);
+    col += uEdgeColor * edge * uInside * (0.5 + 0.5 * uHaze);
+  }
+
+  float dr = r - R;
+  float halo = 1.0 - smoothstep(R * 0.05, R * 0.105, abs(dr - R * 0.0213));
+  col += uRimDeep * 0.18 * halo * topDim * uGlow * uBloom;
+  col += uRim * 0.12 * bell(dr + R * 0.0383, R * 0.032) * uGlow * uBloom;
+  col += uRim * 0.32 * bell(dr, max(R * 0.0117, uLine)) * uPresence * uUnfold;
+
+  float delta = mod(theta - uHeat.x + PI, TAU) - PI;
+  float heat = uHeat.z * uHeat.y * exp(-delta * delta / 0.3);
+  float crackle = uCrackle + heat * 0.9;
+  float amp = R * 0.016 * (0.3 + 1.4 * crackle) * uUnfold;
+  float jitterAmp = R * 0.0048 * (0.3 + 1.4 * uCrackle) * uUnfold * (1.0 + heat * 0.3);
+  float flareAmp = R * 0.064 * (0.4 + 1.2 * crackle) * uFlares * 1.6 * uUnfold;
+
+  if (abs(dr) < amp * 2.0 + flareAmp + R * 0.3) {
+    float step = TAU / uBins;
+    float binPos = (theta + PI) / step;
+    float bin0 = floor(binPos);
+    float binF = binPos - bin0;
+    float th0 = bin0 * step - PI;
+    float th1 = th0 + step;
+    uint b0 = uint(mod(bin0, uBins));
+    uint b1 = uint(mod(bin0 + 1.0, uBins));
+    float gain = min(1.0, 2.4 / max(uStrands, 1.0));
+    for (int k = 0; k < 8; k++) {
+      if (float(k) >= uStrands) break;
+      vec4 m = uHarmonics[k];
+      vec4 lead = uRates[k] * uTime + uPhases[k];
+      float wave0 = dot(AMPS, sin(m * th0 + lead));
+      float wave1 = dot(AMPS, sin(m * th1 + lead));
+      uint salt = uint(k) * 1013u + frame * 7919u;
+      vec4 shape = uFlareHarmonics[k];
+      vec4 look = uFlareRates[k];
+      vec4 tone = uFlarePhases[k];
+      float a = amp * shape.w;
+      float off0 = a * wave0 + jitterAmp * (random(b0 + salt) - 0.5);
+      float off1 = a * wave1 + jitterAmp * (random(b1 + salt) - 0.5);
+      float rc = R + mix(off0, off1, binF);
+      float grade = (off1 - off0) / (step * max(r, 1.0));
+      float d = abs(r - rc) * inversesqrt(1.0 + grade * grade);
+      float swell = 0.8 + 0.4 * (0.5 + 0.5 * sin(3.0 * theta + uTime * 0.7 + tone.x * 1.7));
+      float width = uLine * look.w * swell * (1.0 + heat * 0.25);
+      float core = exp(-d * d / (width * width));
+      float sheath = exp(-d * d / (width * width * 3.0));
+      float bright = tone.w * (1.0 + heat * 0.45) * uPresence;
+      col += (uRimHot * core * 0.8 + uRim * sheath * 0.32) * bright;
+      hot += core * bright;
+      vec3 fargs = shape.xyz * theta + look.xyz * uTime + tone.xyz;
+      float flare = max(0.0, (sin(fargs.x) + sin(fargs.y) + sin(fargs.z)) / 3.0);
+      flare = (flare * flare + heat * 0.35) * flareAmp;
+      float dw = abs(r - rc - flare);
+      float dm = abs(r - rc - flare * 0.6);
+      float dn = abs(r - rc - flare * 0.25);
+      vec3 glow = uRimDeep * (0.07 * bell(dw, R * 0.09) + 0.16 * bell(dw, R * 0.05));
+      glow += uRimMid * 0.28 * bell(dm, R * 0.027) + uRim * 0.38 * bell(dn, R * 0.013);
+      col += glow * gain * topDim * uGlow * uBloom * (1.0 + heat * 1.4);
+    }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    vec4 arc = uArcs[i];
+    if (arc.w <= 0.002) continue;
+    float mid = arc.x + arc.y * 0.5;
+    vec2 center = R * 0.93 * vec2(cos(mid), sin(mid));
+    if (distance(p, center) > R * (abs(arc.y) * 0.6 + 0.1) + 12.0) continue;
+    float ar = R * 0.955;
+    vec2 a0 = ar * vec2(cos(arc.x), sin(arc.x));
+    vec2 a2 = ar * vec2(cos(arc.x + arc.y), sin(arc.x + arc.y));
+    vec2 a1 = R * (0.955 - arc.z) * vec2(cos(mid), sin(mid));
+    float dmin = 1e5;
+    float along = 0.0;
+    vec2 prev = a0;
+    for (int s = 1; s <= 10; s++) {
+      float u = float(s) / 10.0;
+      vec2 b = mix(mix(a0, a1, u), mix(a1, a2, u), u);
+      vec2 pa = p - prev;
+      vec2 ba = b - prev;
+      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-5), 0.0, 1.0);
+      float dist = length(pa - ba * h);
+      if (dist < dmin) {
+        dmin = dist;
+        along = (float(s) - 1.0 + h) / 10.0;
+      }
+      prev = b;
+    }
+    float taper = sqrt(max(sin(PI * along), 0.0));
+    float arcWidth = uLine * (0.55 + 0.6 * taper);
+    float arcCore = exp(-dmin * dmin / (arcWidth * arcWidth));
+    float arcGlow = exp(-dmin * dmin / (arcWidth * arcWidth * 12.0));
+    col += (uSpark * 0.95 * arcCore + uSparkGlow * 0.4 * arcGlow) * arc.w * taper;
+    hot += arcCore * arc.w * taper * 0.6;
+  }
+
+  fragColor = vec4(col, hot) * uEncode;
+}
+`;
+  const dustVertex=`#version 300 es
+precision highp float;
+
+in float aIndex;
+
+uniform sampler2D tHome;
+uniform sampler2D tSeed;
+uniform sampler2D tOffset;
+uniform float uStirred;
+uniform vec2 uCenter;
+uniform vec2 uViewport;
+uniform float uRadius;
+uniform float uDpr;
+uniform float uDepth;
+uniform float uTwinkle;
+uniform float uPointScale;
+uniform float uReveal;
+uniform float uEncode;
+uniform vec3 uTones[5];
+uniform vec3 uRimTone;
+
+out vec3 vColor;
+out float vSize;
+`+hashChunk+`
+`+dustChunk+`
+void main() {
+  ivec2 cell = ivec2(int(mod(float(gl_VertexID), 256.0)), int(floor(float(gl_VertexID) / 256.0)));
+  uint id = uint(aIndex);
+  vec4 home = texelFetch(tHome, cell, 0);
+  vec4 seed = texelFetch(tSeed, cell, 0);
+  float life;
+  float spread;
+  vec3 p = drift(home, seed, id, life, spread);
+  if (uStirred > 0.5) p += texelFetch(tOffset, cell, 0).xyz;
+  float len = length(p);
+  float inside = 1.0 - smoothstep(0.955, 0.985, length(p.xy));
+  if (len > 0.975) p *= 0.975 / len;
+
+  float front = p.z * 0.5 + 0.5;
+  float depthSize = mix(1.0, 0.7 + 0.6 * front, uDepth);
+  float depthLight = mix(1.0, 0.35 + 0.8 * front, uDepth);
+  float blink = sin(uDustTime * (2.0 + 6.0 * random(id * 7u + 5u)) + random(id * 7u + 6u) * 6.2831853);
+  float twinkle = mix(1.0, smoothstep(-0.9, -0.6, blink), uTwinkle);
+  float fade = smoothstep(0.04, 0.12, life);
+  float order = (home.y + 1.0) * 0.5 * 0.55 + random(id * 7u + 8u) * 0.25;
+  float reveal = smoothstep(order, order + 0.2, uReveal * 1.0);
+  float alpha = random(id * 7u + 9u) < 0.5 || home.w > 3.5 ? 1.0 : 0.6;
+
+  float size = seed.x * uPointScale * (0.35 + 0.95 * life) * depthSize * mix(0.5, 1.0, reveal);
+  vec2 screen = uCenter + p.xy * uRadius;
+  gl_Position = vec4(screen / uViewport * 2.0 - 1.0, 0.0, 1.0);
+  float px = size * uDpr;
+  gl_PointSize = px + 2.0;
+  vSize = px;
+
+  int tone = int(home.w + 0.5);
+  float rimLit = smoothstep(0.8, 0.97, length(p.xy));
+  vec3 color = uTones[tone] + uRimTone * rimLit * rimLit * 0.12;
+  vColor = color * alpha * fade * twinkle * depthLight * reveal * inside * sqrt(spread) * uEncode;
+}
+`;
+  const dustFragment=`#version 300 es
+precision highp float;
+
+uniform float uShape;
+
+in vec3 vColor;
+in float vSize;
+
+out vec4 fragColor;
+
+void main() {
+  vec2 q = (gl_PointCoord - 0.5) * (vSize + 2.0);
+  float half_ = max(vSize * 0.5, 0.5);
+  float cover;
+  if (uShape < 0.5) {
+    vec2 c = clamp(half_ - abs(q) + 0.5, 0.0, 1.0);
+    cover = c.x * c.y;
+  } else {
+    cover = clamp(half_ - length(q) + 0.5, 0.0, 1.0);
+  }
+  if (cover <= 0.0) discard;
+  fragColor = vec4(vColor * cover, 0.0);
+}
+`;
+  const stirFragment=`#version 300 es
+precision highp float;
+
+uniform sampler2D tHome;
+uniform sampler2D tSeed;
+uniform sampler2D tOffset;
+uniform sampler2D tVelocity;
+uniform float uDt;
+uniform float uReset;
+uniform vec4 uBrush;
+uniform float uBrushPower;
+uniform vec4 uKick;
+
+layout(location = 0) out vec4 outOffset;
+layout(location = 1) out vec4 outVelocity;
+`+hashChunk+`
+`+dustChunk+`
+vec3 swirl(vec3 p) {
+  float t = uDustTime * 0.15;
+  vec3 a = vec3(1.7, 1.9, 1.5) * p.yzx + vec3(t, 1.2, 2.1);
+  vec3 b = vec3(2.3, 2.1, 2.7) * p.zxy + vec3(0.4, t * 1.3, 0.9);
+  vec3 ca = cos(a) * vec3(1.7, 1.9, 1.5);
+  vec3 cb = cos(b) * vec3(2.3, 2.1, 2.7);
+  return vec3(ca.z - cb.x, cb.y - ca.x, ca.y - cb.z);
+}
+
+void main() {
+  ivec2 cell = ivec2(gl_FragCoord.xy);
+  if (uReset > 0.5) {
+    outOffset = vec4(0.0);
+    outVelocity = vec4(0.0);
+    return;
+  }
+  uint id = uint(cell.y * 256 + cell.x);
+  vec4 home = texelFetch(tHome, cell, 0);
+  vec4 seed = texelFetch(tSeed, cell, 0);
+  vec3 o = texelFetch(tOffset, cell, 0).xyz;
+  vec3 v = texelFetch(tVelocity, cell, 0).xyz;
+  float life;
+  float spread;
+  vec3 base = drift(home, seed, id, life, spread);
+  vec3 p = base + o;
+
+  float k = mix(0.8, 2.2, random(id * 7u + 11u));
+  vec3 acc = -k * o - 1.5 * sqrt(k) * v;
+
+  vec2 gap = p.xy - uBrush.xy;
+  float touch = exp(-dot(gap, gap) / 0.07) * uBrushPower;
+  acc += (vec3(uBrush.zw, 0.0) - v) * touch * 14.0;
+  float pace = length(v);
+  if (pace > 1e-4) {
+    vec3 heading = v / pace;
+    vec3 curl = swirl(p * 1.6);
+    acc += (curl - heading * dot(curl, heading)) * min(pace, 2.0) * 1.8;
+  }
+
+  if (uKick.z > 0.0) {
+    vec3 jolt = vec3(random(id * 7u + 12u), random(id * 7u + 13u), random(id * 7u + 14u)) - 0.5;
+    float near = exp(-dot(p.xy - uKick.xy, p.xy - uKick.xy) / 0.4);
+    vec3 spinKick = vec3(-p.z, 0.0, p.x) * 0.9;
+    vec3 lift = vec3(0.0, 0.5 + 0.8 * random(id * 7u + 15u), 0.0) * (0.3 + 0.7 * smoothstep(0.2, -0.8, p.y));
+    v += (jolt * 0.8 + spinKick + lift) * uKick.z * (0.4 + 0.45 * near);
+  }
+
+  v += acc * uDt;
+  o += v * uDt;
+  vec3 q = base + o;
+  float len = length(q);
+  if (len > 0.97) {
+    vec3 n = q / len;
+    o -= n * (len - 0.97);
+    v -= n * max(dot(v, n), 0.0) * 1.5;
+  }
+  outOffset = vec4(o, 1.0);
+  outVelocity = vec4(v, 1.0);
+}
+`;
+  const compositeFragment=`#version 300 es
+precision highp float;
+
+uniform sampler2D tScene;
+uniform float uLight;
+uniform float uDecode;
+
+in vec2 vUv;
+out vec4 fragColor;
+
+vec3 soften(vec3 x) {
+  vec3 over = max(x - 0.6, 0.0);
+  return min(x, 0.6) + 0.4 * (1.0 - exp(-over / 0.4));
+}
+
+void main() {
+  vec4 scene = texture(tScene, vUv) * uDecode;
+  vec3 light = max(scene.rgb, 0.0);
+  float peak = max(light.r, max(light.g, light.b));
+  if (uLight > 0.5) {
+    vec3 hue = light / max(peak, 1e-4);
+    float cover = 1.0 - exp(-peak * 2.4);
+    vec3 ink = hue * mix(0.92, 0.72, cover);
+    float core = clamp(scene.a * 0.7, 0.0, 1.0) * cover;
+    vec3 tint = mix(vec3(1.0), hue, 0.22);
+    fragColor = vec4(tint * core + ink * cover * (1.0 - core), core + cover * (1.0 - core));
+    return;
+  }
+  light += vec3(max(peak - 1.8, 0.0) * 0.25);
+  vec3 shown = soften(light);
+  fragColor = vec4(shown, max(shown.r, max(shown.g, shown.b)));
+}
+`;
+
+  /* ---------- 极简 WebGL2 封装 ---------- */
+  const compile = (gl, type, src) => {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+    return sh;
+  };
+  const createProgram = (gl, vs, fs) => {
+    const p = gl.createProgram();
+    gl.bindAttribLocation(p, 0, 'position');
+    gl.bindAttribLocation(p, 1, 'uv');
+    gl.bindAttribLocation(p, 2, 'aIndex');
+    gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const uni = {};
+    const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) {
+      const info = gl.getActiveUniform(p, i);
+      const name = info.name.replace(/\[0\]$/, '');
+      if (!uni[name]) uni[name] = { loc: gl.getUniformLocation(p, info.name), type: info.type, size: info.size };
+    }
+    return { p, uni };
+  };
+  const applyUniforms = (gl, prog, uniforms) => {
+    let unit = 0;
+    for (const name in uniforms) {
+      const u = prog.uni[name];
+      if (!u) continue;
+      const v = uniforms[name].value;
+      const t = u.type;
+      if (t === gl.SAMPLER_2D) {
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, v.texture);
+        gl.uniform1i(u.loc, unit);
+        unit++;
+      } else if (t === gl.FLOAT) {
+        if (u.size > 1) gl.uniform1fv(u.loc, v); else gl.uniform1f(u.loc, v);
+      } else if (t === gl.FLOAT_VEC2) {
+        gl.uniform2fv(u.loc, v);
+      } else if (t === gl.FLOAT_VEC3) {
+        if (u.size > 1) gl.uniform3fv(u.loc, v); else gl.uniform3fv(u.loc, v);
+      } else if (t === gl.FLOAT_VEC4) {
+        if (u.size > 1) gl.uniform4fv(u.loc, v); else gl.uniform4fv(u.loc, v);
+      } else if (t === gl.INT) {
+        gl.uniform1i(u.loc, v);
+      } else if (t === gl.UNSIGNED_INT) {
+        gl.uniform1ui(u.loc, v);
+      } else if (t === gl.BOOL) {
+        gl.uniform1i(u.loc, v ? 1 : 0);
+      }
+    }
+  };
+  const createTexture = (gl, opts) => {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, opts.minFilter || gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, opts.magFilter || gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const internal = opts.internalFormat || gl.RGBA;
+    const type = opts.type || gl.UNSIGNED_BYTE;
+    const format = opts.format || gl.RGBA;
+    if (opts.image) gl.texImage2D(gl.TEXTURE_2D, 0, internal, opts.width, opts.height, 0, format, type, opts.image);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, internal, opts.width, opts.height, 0, format, type, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return { texture: tex, width: opts.width, height: opts.height };
+  };
+  const createFBO = (gl, width, height, opts) => {
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    const colors = opts.color || 1;
+    const texs = [];
+    const atts = [];
+    for (let i = 0; i < colors; i++) {
+      const t = createTexture(gl, { width, height, type: opts.type || gl.UNSIGNED_BYTE, internalFormat: opts.internalFormat || gl.RGBA, format: opts.format || gl.RGBA, minFilter: opts.minFilter || gl.NEAREST, magFilter: opts.magFilter || gl.NEAREST });
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, t.texture, 0);
+      atts.push(gl.COLOR_ATTACHMENT0 + i);
+      texs.push(t);
+    }
+    if (colors > 1) gl.drawBuffers(atts);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { buffer: fbo, textures: texs, width, height, colorCount: colors };
+  };
+  const disposeFBO = (gl, t) => {
+    if (!t) return;
+    gl.deleteFramebuffer(t.buffer);
+    t.textures.forEach(x => gl.deleteTexture(x.texture));
+  };
+
+  /* ---------- 引擎（挂载到 container） ---------- */
+  const boot = (container, settings) => {
+    let cleanup = () => {};
+    let wake = () => {};
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.style.display = 'block';
+      canvas.style.position = 'absolute';
+      canvas.style.left = '50%';
+      canvas.style.top = '50%';
+      canvas.style.transform = 'translate(-50%,-50%)';
+      canvas.style.width = '200%';
+      canvas.style.height = '200%';
+      canvas.style.pointerEvents = 'none';
+      canvas.setAttribute('aria-hidden', 'true');
+      container.appendChild(canvas);
+      const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false });
+      if (!gl) { if (canvas.parentNode) canvas.parentNode.removeChild(canvas); return cleanup; }
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+
+      const triangleVAO = gl.createVertexArray();
+      gl.bindVertexArray(triangleVAO);
+      const pb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, pb);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      const ub = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, ub);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 2,0, 0,2]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(1);
+      gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+      gl.bindVertexArray(null);
+
+      const blank = createTexture(gl, { width: 1, height: 1, image: new Uint8Array([0,0,0,0]) });
+      const fullFloat = !!gl.getExtension('EXT_color_buffer_float');
+      const halfFloat = fullFloat || !!gl.getExtension('EXT_color_buffer_half_float');
+      const encode = halfFloat ? 1 : 0.25;
+      const strandData = buildStrands();
+      const arcData = new Array(MAX_ARCS * 4).fill(0);
+
+      const fieldUniforms = {
+        uCenter:{value:[0,0]}, uRadius:{value:1}, uDpr:{value:1}, uLine:{value:0.6}, uTime:{value:0},
+        uFrame:{value:0}, uBins:{value:420}, uStrands:{value:5}, uCrackle:{value:0.6}, uFlares:{value:0.5},
+        uGlow:{value:0.8}, uHaze:{value:0.7}, uFill:{value:0.5}, uPresence:{value:0}, uUnfold:{value:0},
+        uBloom:{value:0}, uInside:{value:0}, uEncode:{value:encode},
+        uRim:{value:[1,1,1]}, uRimHot:{value:[1,1,1]}, uRimMid:{value:[1,1,1]}, uRimDeep:{value:[1,1,1]},
+        uSpark:{value:[1,1,1]}, uSparkGlow:{value:[1,1,1]}, uHazeColor:{value:[0,0,0]}, uEdgeColor:{value:[0,0,0]},
+        uHeat:{value:[0,0,0,0]},
+        uHarmonics:{value:strandData.harmonics}, uRates:{value:strandData.rates}, uPhases:{value:strandData.phases},
+        uFlareHarmonics:{value:strandData.flareHarmonics}, uFlareRates:{value:strandData.flareRates}, uFlarePhases:{value:strandData.flarePhases},
+        uArcs:{value:arcData}
+      };
+      const dustShared = {
+        uDustTime:{value:0}, uTurn:{value:[0,0]}, uMotion:{value:0}, uFill:fieldUniforms.uFill,
+        tHome:{value:blank}, tSeed:{value:blank}
+      };
+      const dustUniforms = {
+        ...dustShared, tOffset:{value:blank}, uStirred:{value:0}, uCenter:fieldUniforms.uCenter,
+        uViewport:{value:[1,1]}, uRadius:fieldUniforms.uRadius, uDpr:fieldUniforms.uDpr,
+        uDepth:{value:0.6}, uTwinkle:{value:0.5}, uPointScale:{value:1}, uReveal:{value:0}, uEncode:{value:encode},
+        uTones:{value:new Array(15).fill(1)}, uRimTone:{value:[1,1,1]}, uShape:{value:0}
+      };
+      const stirUniforms = {
+        ...dustShared, tOffset:{value:blank}, tVelocity:{value:blank}, uDt:{value:0.016},
+        uReset:{value:1}, uBrush:{value:[0,0,0,0]}, uBrushPower:{value:0}, uKick:{value:[0,0,0,0]}
+      };
+
+      let sceneTarget = createFBO(gl, 1, 1, { type: halfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, format: gl.RGBA, internalFormat: halfFloat ? gl.RGBA16F : gl.RGBA });
+      const compositeUniforms = { tScene:{value:sceneTarget.textures[0]}, uLight:{value:0}, uDecode:{value:1/encode} };
+
+      const fieldProgram = createProgram(gl, passVertex, fieldFragment);
+      const dustProgram = createProgram(gl, dustVertex, dustFragment);
+      const compositeProgram = createProgram(gl, passVertex, compositeFragment);
+      const stirProgram = halfFloat ? createProgram(gl, passVertex, stirFragment) : null;
+      const draw = (mesh, target, clear) => {
+        gl.useProgram(mesh.program.p);
+        if (target) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, target.buffer);
+          gl.viewport(0, 0, target.width, target.height);
+          if (target.colorCount > 1) gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+        } else {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        }
+        if (mesh.blend) { gl.enable(gl.BLEND); gl.blendFunc(mesh.blend[0], mesh.blend[1]); }
+        else gl.disable(gl.BLEND);
+        gl.bindVertexArray(mesh.vao || triangleVAO);
+        applyUniforms(gl, mesh.program, mesh.uniforms);
+        if (clear) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+        gl.drawArrays(mesh.mode, 0, mesh.count || 3);
+        gl.bindVertexArray(null);
+      };
+      const stateTarget = rows => createFBO(gl, STATE_WIDTH, rows, { color: 2, type: fullFloat ? gl.FLOAT : gl.HALF_FLOAT, format: gl.RGBA, internalFormat: fullFloat ? gl.RGBA32F : gl.RGBA16F });
+      const dataTexture = (data, rows) => createTexture(gl, { image: data, width: STATE_WIDTH, height: rows, type: gl.FLOAT, format: gl.RGBA, internalFormat: gl.RGBA32F });
+
+      let dust = null;
+      const resetStir = () => {
+        if (!stirProgram || !dust || !dust.read || !dust.write) return;
+        stirUniforms.tOffset.value = blank;
+        stirUniforms.tVelocity.value = blank;
+        stirUniforms.uReset.value = 1;
+        draw({ program: stirProgram, blend: null, mode: gl.TRIANGLES, uniforms: stirUniforms }, dust.read, false);
+        draw({ program: stirProgram, blend: null, mode: gl.TRIANGLES, uniforms: stirUniforms }, dust.write, false);
+        stirUniforms.uReset.value = 0;
+      };
+      const rebuildDust = requested => {
+        const total = clamp(Math.round(requested / 100) * 100, 0, MAX_PARTICLES);
+        if (dust && dust.requested === total) return;
+        if (dust) { if (dust.buf) gl.deleteBuffer(dust.buf); dust = null; }
+        if (!total) return;
+        const data = buildDust(total);
+        const indices = new Float32Array(data.count);
+        for (let i = 0; i < data.count; i++) indices[i] = i;
+        const vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 1, gl.FLOAT, false, 0, 0);
+        gl.bindVertexArray(null);
+        const home = dataTexture(data.home, data.rows);
+        const seed = dataTexture(data.seed, data.rows);
+        dust = {
+          requested: total, count: data.count, rows: data.rows, home, seed, buf, vao,
+          uniforms: dustUniforms,
+          read: stirProgram ? stateTarget(data.rows) : null,
+          write: stirProgram ? stateTarget(data.rows) : null
+        };
+        dustShared.tHome.value = home;
+        dustShared.tSeed.value = seed;
+        resetStir();
+        stirring = 0;
+      };
+
+      /* settings 由宿主组件（CrystalBallHero）持有并实时读写 */
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const random = seeded(913);
+      let width = 1, height = 1, logicalW = 1, logicalH = 1, raf = 0, last = performance.now();
+      let rimTime = 0, dustTime = 0, swayClock = 0, introClock = 0, visible = true, alive = true;
+      let surge = 0, stirring = 0, stirEnergy = 0, kick = null, nextArc = 0.3;
+      const arcs = [];
+      const pointer = { x: 0, y: 0, inside: false, fresh: true };
+      const heat = { angle: 0, velocity: 0, power: 0, near: 0 };
+      const brush = { x: 0, y: 0, vx: 0, vy: 0 };
+      const look = { x: 0, y: 0, vx: 0, vy: 0 };
+      let palette = null, paletteKey = '';
+
+      const resizeScene = () => {
+        logicalW = Math.max(1, container.clientWidth);
+        logicalH = Math.max(1, container.clientHeight);
+        width = logicalW * 2;
+        height = logicalH * 2;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        disposeFBO(gl, sceneTarget);
+        sceneTarget = createFBO(gl, canvas.width, canvas.height, { type: halfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, format: gl.RGBA, internalFormat: halfFloat ? gl.RGBA16F : gl.RGBA });
+        compositeUniforms.tScene.value = sceneTarget.textures[0];
+        start();
+      };
+
+      const spawnArc = (angle, strength) => {
+        if (arcs.length >= MAX_ARCS) return;
+        arcs.push({ start: angle, span: (0.05 + random() * 0.07) * (random() < 0.5 ? -1 : 1), curl: 0.02 + random() * 0.04, life: 0, duration: 0.2 + random() * 0.2, drift: (random() - 0.5) * 0.3, strength });
+      };
+
+      const frame = now => {
+        raf = 0;
+        if (!alive) return;
+        const s = settings;
+        const dt = Math.min(0.05, Math.max(1 / 240, (now - last) / 1000));
+        last = now;
+        const moving = !s.paused && !reducedMotion;
+        introClock = s.intro && !reducedMotion ? Math.min(1, introClock + dt / INTRO_SECONDS) : 1;
+        const presence = easeOut(smooth(0, 0.42, introClock));
+        const unfold = easeOut(smooth(0, 0.32, introClock));
+        const charge = Math.sin(Math.PI * smooth(0.22, 0.78, introClock)) * 0.12;
+        const radius = Math.max(8, (clamp(s.size, 0.1, 1.5) * Math.min(logicalW, logicalH)) / 2);
+
+        const strength = s.interactive && !reducedMotion ? clamp(s.hoverStrength, 0, 1) : 0;
+        const px = pointer.x - logicalW / 2;
+        const py = logicalH / 2 - pointer.y;
+        const reach = Math.hypot(px, py);
+        const target = pointer.inside ? strength : 0;
+        if (heat.power < 0.02) { heat.angle = Math.atan2(py, px); heat.velocity = 0; }
+        const turn = wrapAngle(Math.atan2(py, px) - heat.angle);
+        heat.velocity += (120 * turn - 19 * heat.velocity) * dt;
+        heat.angle = wrapAngle(heat.angle + heat.velocity * dt);
+        heat.power += (target - heat.power) * (1 - Math.exp(-dt / (target > heat.power ? 0.3 : 0.55)));
+        const nearTarget = Math.exp(-Math.pow((reach - radius) / (radius * 0.45), 2));
+        heat.near += (nearTarget - heat.near) * (1 - Math.exp(-dt / 0.15));
+        surge *= Math.exp(-dt / 0.7);
+
+        const bx = px / radius, by = py / radius;
+        if (Math.hypot(bx - brush.x, by - brush.y) > 0.6) pointer.fresh = true;
+        if (pointer.fresh) { brush.x = bx; brush.y = by; brush.vx = 0; brush.vy = 0; pointer.fresh = false; }
+        const follow = 1 - Math.exp(-dt / 0.05);
+        brush.vx += ((bx - brush.x) / dt - brush.vx) * follow;
+        brush.vy += ((by - brush.y) / dt - brush.vy) * follow;
+        brush.x = bx; brush.y = by;
+        const brushSpeed = Math.hypot(brush.vx, brush.vy);
+        const cap = brushSpeed > 4 ? 4 / brushSpeed : 1;
+        const inBall = Math.exp(-Math.max(0, Math.hypot(bx, by) - 1) * 6);
+        const brushPower = pointer.inside ? strength * inBall * presence : 0;
+        stirEnergy = stirEnergy * Math.exp(-dt / 1.2) + brushPower * Math.min(brushSpeed, 4) * dt;
+
+        if (moving) {
+          const pace = 1 + surge * 0.6 + heat.power * heat.near * 0.3;
+          const step = dt * Math.max(0, s.speed) * 2 * pace;
+          rimTime += step;
+          dustTime += dt * Math.max(0, s.dustSpeed) * (1 + surge * 0.4);
+          swayClock += dt * Math.max(0, s.dustSpeed);
+          const crackleNow = clamp(s.crackle + surge * 0.5, 0, 1.5);
+          if (s.sparks > 0.01 && introClock > 0.55) {
+            nextArc -= step * s.sparks * 2 * (0.6 + crackleNow * 0.6);
+            if (nextArc <= 0) {
+              const local = heat.power * heat.near;
+              const angle = random() < local * 0.7 ? heat.angle + (random() - 0.5) * 0.8 : random() < 0.7 ? Math.PI / 2 + (random() - 0.5) * 1.5 : random() * Math.PI * 2;
+              spawnArc(angle, 0.8 + local * 0.6 + surge * 0.4);
+              nextArc = 0.15 + random() * 0.6;
+            }
+          }
+          for (let i = arcs.length - 1; i >= 0; i--) {
+            const arc = arcs[i];
+            arc.life += step;
+            arc.start += arc.drift * step;
+            if (arc.life >= arc.duration) arcs.splice(i, 1);
+          }
+        } else arcs.length = 0;
+        for (let i = 0; i < MAX_ARCS; i++) {
+          const arc = arcs[i];
+          arcData[i * 4] = arc ? arc.start : 0;
+          arcData[i * 4 + 1] = arc ? arc.span : 0;
+          arcData[i * 4 + 2] = arc ? arc.curl : 0;
+          arcData[i * 4 + 3] = arc ? Math.sin((Math.PI * arc.life) / arc.duration) * arc.strength : 0;
+        }
+
+        rebuildDust(s.particleCount);
+        const light = s.theme === 'light';
+        if (!palette || light !== s.light || s.color !== paletteKey) { s.light = light; paletteKey = s.color; palette = buildPalette(parseColor(s.color, [0.95,0.36,0.82]), light); }
+
+        fieldUniforms.uCenter.value = [width / 2, height / 2];
+        fieldUniforms.uRadius.value = radius;
+        fieldUniforms.uDpr.value = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));
+        fieldUniforms.uLine.value = Math.max(0.6, radius * 0.0035);
+        fieldUniforms.uTime.value = rimTime;
+        fieldUniforms.uFrame.value = Math.floor(rimTime * 24) % 100000;
+        fieldUniforms.uBins.value = clamp(Math.round((Math.PI * 2 * radius) / 2.6), 240, 900);
+        fieldUniforms.uStrands.value = Math.round(clamp(s.strands, 1, MAX_STRANDS));
+        fieldUniforms.uCrackle.value = clamp(s.crackle, 0, 1) + surge * 0.5 + charge;
+        fieldUniforms.uFlares.value = clamp(s.flares, 0, 1);
+        fieldUniforms.uGlow.value = clamp(s.glow, 0, 2) * (1 + surge * 0.5 + charge) * (light ? 0.35 : 1);
+        fieldUniforms.uHaze.value = clamp(s.haze, 0, 2) * (light ? 0.6 : 1);
+        fieldUniforms.uFill.value = clamp(s.fill, 0, 1);
+        fieldUniforms.uPresence.value = presence;
+        fieldUniforms.uUnfold.value = unfold;
+        fieldUniforms.uBloom.value = presence * presence;
+        fieldUniforms.uInside.value = smooth(0.2, 0.95, introClock);
+        fieldUniforms.uRim.value = palette.rim;
+        fieldUniforms.uRimHot.value = palette.rimHot;
+        fieldUniforms.uRimMid.value = palette.rimMid;
+        fieldUniforms.uRimDeep.value = palette.rimDeep;
+        fieldUniforms.uSpark.value = palette.spark;
+        fieldUniforms.uSparkGlow.value = palette.sparkGlow;
+        fieldUniforms.uHazeColor.value = palette.haze;
+        fieldUniforms.uEdgeColor.value = palette.edge;
+        fieldUniforms.uHeat.value = [heat.angle, heat.near, heat.power * presence, 0];
+
+        dustShared.uDustTime.value = dustTime;
+        const gaze = pointer.inside ? strength * presence : 0;
+        const lookX = clamp(bx, -1.6, 1.6) * gaze;
+        const lookY = clamp(by, -1.6, 1.6) * gaze;
+        look.vx += (40 * (lookX - look.x) - 11 * look.vx) * dt;
+        look.vy += (40 * (lookY - look.y) - 11 * look.vy) * dt;
+        look.x += look.vx * dt;
+        look.y += look.vy * dt;
+        const swing = clamp(s.sway, 0, 1);
+        dustShared.uTurn.value = [swing * 0.42 * Math.sin(swayClock * 0.23) + look.x * 0.3, swing * 0.12 * Math.sin(swayClock * 0.17 + 1.3) - look.y * 0.16];
+        dustShared.uMotion.value = MOTIONS[s.motion] ?? 0;
+        dustUniforms.uViewport.value = [width, height];
+        dustUniforms.uDepth.value = clamp(s.depth, 0, 1);
+        dustUniforms.uTwinkle.value = clamp(s.twinkle, 0, 1);
+        dustUniforms.uPointScale.value = Math.max(1, radius / 491);
+        dustUniforms.uReveal.value = smooth(0.18, 1, introClock);
+        dustUniforms.uTones.value = palette.tones.flat();
+        dustUniforms.uRimTone.value = palette.rim;
+        dustUniforms.uShape.value = SHAPES[s.particleShape] ?? 0;
+
+        const layer = dust;
+        if (layer && stirProgram && (stirEnergy > 0.002 || kick)) stirring = SETTLE_SECONDS;
+        let stirred = false;
+        if (layer && layer.read && layer.write && stirProgram && stirring > 0) {
+          stirUniforms.uDt.value = Math.min(dt, 1 / 30);
+          stirUniforms.uBrush.value = [brush.x, brush.y, brush.vx * cap, brush.vy * cap];
+          stirUniforms.uBrushPower.value = brushPower;
+          stirUniforms.uKick.value = kick ? [kick.x, kick.y, kick.strength, 0] : [0, 0, 0, 0];
+          stirUniforms.tOffset.value = layer.read.textures[0];
+          stirUniforms.tVelocity.value = layer.read.textures[1];
+          draw({ program: stirProgram, blend: null, mode: gl.TRIANGLES, uniforms: stirUniforms }, layer.write, false);
+          const swap = layer.read; layer.read = layer.write; layer.write = swap;
+          stirring -= dt;
+          stirred = stirring > 0;
+          if (!stirred) { stirring = 0; resetStir(); }
+        }
+        kick = null;
+        dustUniforms.uStirred.value = stirred ? 1 : 0;
+        dustUniforms.tOffset.value = layer && layer.read ? layer.read.textures[0] : blank;
+
+        draw({ program: fieldProgram, blend: [gl.ONE, gl.ONE], mode: gl.TRIANGLES, uniforms: fieldUniforms }, sceneTarget, true);
+        if (dust) draw({ program: dustProgram, blend: [gl.ONE, gl.ONE], mode: gl.POINTS, uniforms: dustUniforms, count: dust.count }, sceneTarget, false);
+        compositeUniforms.uLight.value = light ? 1 : 0;
+        draw({ program: compositeProgram, blend: [gl.ONE, gl.ONE_MINUS_SRC_ALPHA], mode: gl.TRIANGLES, uniforms: compositeUniforms }, null, false);
+
+        const settling = Math.abs(target - heat.power) > 0.002 || surge > 0.002 || stirring > 0 || Math.abs(heat.velocity) > 0.01 || Math.hypot(look.vx, look.vy, look.x - lookX, look.y - lookY) > 0.001;
+        if (visible && (moving || introClock < 1 || settling)) raf = requestAnimationFrame(frame);
+      };
+      const start = () => { if (raf || !visible || !alive) return; last = performance.now(); raf = requestAnimationFrame(frame); };
+
+      const locate = e => { const r = container.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top; return { x, y, inside: x >= 0 && y >= 0 && x <= r.width && y <= r.height }; };
+      const onPointerMove = e => {
+        const spot = locate(e);
+        if (spot.inside && !pointer.inside) pointer.fresh = true;
+        pointer.x = spot.x; pointer.y = spot.y; pointer.inside = spot.inside;
+        if (spot.inside) start();
+      };
+      const onPointerDown = e => {
+        const spot = locate(e);
+        if (!settings.interactive || reducedMotion || !spot.inside) return;
+        if (!pointer.inside) pointer.fresh = true;
+        pointer.x = spot.x; pointer.y = spot.y; pointer.inside = true;
+        const radius = Math.max(8, (clamp(settings.size, 0.1, 1.5) * Math.min(logicalW, logicalH)) / 2);
+        const kx = (spot.x - logicalW / 2) / radius, ky = (logicalH / 2 - spot.y) / radius;
+        const distance = Math.hypot(kx, ky);
+        if (distance > 1.3) return;
+        const strength = clamp(settings.hoverStrength, 0, 1);
+        kick = { x: kx, y: ky, strength: strength * 1.2 };
+        surge = Math.max(surge, strength);
+        const angle = Math.atan2(ky, kx);
+        spawnArc(angle + (random() - 0.5) * 0.5, 1.3);
+        spawnArc(angle + Math.PI + (random() - 0.5) * 1.2, 1.1);
+        start();
+      };
+      const onPointerLeave = () => { pointer.inside = false; start(); };
+      const onPointerOut = e => { if (!e.relatedTarget) onPointerLeave(); };
+      const onPointerUp = e => { if (e.pointerType === 'touch') onPointerLeave(); };
+      const onVisibility = () => { if (!document.hidden) start(); };
+
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerdown', onPointerDown, { passive: true });
+      window.addEventListener('pointerout', onPointerOut, { passive: true });
+      window.addEventListener('pointerup', onPointerUp, { passive: true });
+      window.addEventListener('blur', onPointerLeave);
+      document.addEventListener('visibilitychange', onVisibility);
+
+      const ro = new ResizeObserver(resizeScene);
+      ro.observe(container);
+      const io = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; start(); });
+      io.observe(container);
+
+      resizeScene();
+
+      cleanup = () => {
+        alive = false;
+        visible = false;
+        cancelAnimationFrame(raf);
+        ro.disconnect();
+        io.disconnect();
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointerout', onPointerOut);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('blur', onPointerLeave);
+        document.removeEventListener('visibilitychange', onVisibility);
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        try { gl.getExtension('WEBGL_lose_context')?.loseContext(); } catch (e) {}
+      };
+
+      wake = start;
+    } catch (e) {
+      console.warn('CrystalBall init failed:', e);
+    }
+    return { wake, dispose: cleanup };
+  };
+
+  const BALL_FIELDS = [
+    { k:'size', label:'尺寸', min:0.2, max:1.5, step:0.01 },
+    { k:'strands', label:'丝线', min:1, max:8, step:1 },
+    { k:'crackle', label:'裂纹', min:0, max:1.5, step:0.01 },
+    { k:'flares', label:'耀斑', min:0, max:1, step:0.01 },
+    { k:'glow', label:'辉光', min:0, max:2, step:0.01 },
+    { k:'sparks', label:'火花', min:0, max:1, step:0.01 },
+    { k:'particleCount', label:'粒子数', min:0, max:40000, step:500 },
+    { k:'fill', label:'填充', min:0, max:1, step:0.01 },
+    { k:'depth', label:'深度', min:0, max:1, step:0.01 },
+    { k:'sway', label:'摆动', min:0, max:1, step:0.01 },
+    { k:'twinkle', label:'闪烁', min:0, max:1, step:0.01 },
+    { k:'haze', label:'雾霾', min:0, max:2, step:0.01 },
+    { k:'speed', label:'速度', min:0, max:2, step:0.01 },
+    { k:'dustSpeed', label:'尘埃速度', min:0, max:2, step:0.01 },
+    { k:'hoverStrength', label:'悬停强度', min:0, max:1, step:0.01 }
+  ];
+  const BALL_UI_CSS = `
+.ball-rail{display:contents}
+.ball-bar{position:absolute;top:6px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;max-width:94%;z-index:5;pointer-events:auto}
+.ball-chip{border:1px solid rgba(230,230,245,.16);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);color:#cfcfe0;font-size:11px;letter-spacing:.04em;padding:5px 10px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s ease}
+.ball-chip:hover{border-color:rgba(230,230,245,.4);color:#fff}
+.ball-chip.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5);color:#fff}
+.ball-dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 6px currentColor;flex:none}
+.ball-gear{position:absolute;right:8px;top:8px;z-index:6;width:36px;height:36px;border-radius:50%;border:1px solid rgba(230,230,245,.16);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);color:#cfcfe0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;pointer-events:auto}
+.ball-gear:hover{border-color:rgba(230,230,245,.45);color:#fff}
+.ball-panel{position:absolute;right:8px;top:52px;z-index:5;width:252px;max-height:calc(100% - 60px);overflow-y:auto;background:rgba(12,12,20,.82);backdrop-filter:blur(14px);border:1px solid rgba(230,230,245,.14);border-radius:14px;padding:12px 14px;color:#b9b9cc;pointer-events:auto}
+.ball-panel h3{font-size:11px;letter-spacing:.24em;color:rgba(230,230,245,.5);margin:12px 0 6px;font-weight:600}
+.ball-panel h3:first-child{margin-top:0}
+.ball-row{margin-bottom:10px}
+.ball-row .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ball-row label{font-size:12px;color:#b9b9cc}
+.ball-row .val{font-size:11px;color:#8d8da8;font-variant-numeric:tabular-nums}
+.ball-row input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:rgba(230,230,245,.18);outline:none}
+.ball-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#cfd4ff;border:none;cursor:pointer;box-shadow:0 0 6px rgba(148,120,255,.8)}
+.ball-row input[type="color"]{width:100%;height:26px;border:none;background:none;cursor:pointer;padding:0}
+.ball-seg{display:flex;gap:6px}
+.ball-seg button{flex:1;font-size:12px;padding:6px 0;border-radius:7px;border:1px solid rgba(230,230,245,.14);background:rgba(255,255,255,.04);color:#b9b9cc;cursor:pointer;transition:all .15s}
+.ball-seg button.on{background:rgba(148,120,255,.24);border-color:rgba(148,120,255,.6);color:#fff}
+.ball-check{display:flex;align-items:center;gap:8px;font-size:12px;color:#b9b9cc;cursor:pointer;margin-bottom:8px}
+.ball-check input{accent-color:#9478FF;width:14px;height:14px}
+.ball-panel::-webkit-scrollbar{width:6px}
+.ball-panel::-webkit-scrollbar-thumb{background:rgba(230,230,245,.18);border-radius:3px}
+@media (min-width:768px){
+.ball-rail{display:flex;position:absolute;right:12px;top:64%;transform:translateY(-50%);z-index:6;flex-direction:column;align-items:flex-end;gap:8px;max-height:calc(100% - 28px);overflow-y:auto;pointer-events:auto}
+.ball-bar{position:static;transform:none;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;max-width:none;gap:7px;flex:none}
+.ball-gear{position:static;flex:none}
+.ball-panel{position:static;max-height:calc(100vh - 170px);overflow-y:auto;flex:none}
+}
+`;
+  const BALL_GEAR_ICON = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8"/></svg>';
+
+  const CrystalBallHeroComponent = function CrystalBallHero() {
+    const stageRef = useRef(null);
+    const apiRef = useRef({ wake: () => {}, dispose: () => {} });
+    /* 球体参数持久化：调整后自动保存；刷新/重开后自动恢复，即固定为默认值 */
+    const BALL_SAVE_KEY = 'ling-ball-settings';
+    const BALL_DEFAULT = {
+      theme:'dark', size:0.8, strands:6, crackle:1, flares:0.5, glow:0.9, sparks:0.6,
+      particleCount:18000, fill:0.45, motion:'rise', particleShape:'square', depth:0.5,
+      sway:0.4, twinkle:0.6, haze:0.8, dustSpeed:1.2, speed:1, interactive:true,
+      hoverStrength:0.7, intro:true, paused:false, color:'#9478FF', light:false
+    };
+    let _savedBall = null;
+    try { _savedBall = JSON.parse(localStorage.getItem(BALL_SAVE_KEY) || 'null'); } catch (e) { _savedBall = null; }
+    const settingsRef = useRef({ ...BALL_DEFAULT, ...(_savedBall || {}) });
+    const persistBall = () => { try { localStorage.setItem(BALL_SAVE_KEY, JSON.stringify(settingsRef.current)); } catch (e) {} };
+    const [preset, setPreset] = useState('nebula');
+    const [panelOpen, setPanelOpen] = useState(false);
+    const [, tick] = useState({});
+    const wake = () => apiRef.current.wake();
+
+    useEffect(() => {
+      if (!stageRef.current) return undefined;
+      const api = CrystalBallHeroComponent.boot(stageRef.current, settingsRef.current);
+      apiRef.current = api;
+      return () => api.dispose();
+    }, []);
+
+    const applyPreset = key => {
+      const p = BALL_PRESETS[key];
+      const s = settingsRef.current;
+      Object.assign(s, p, { theme: s.theme, size: s.size, interactive: true, hoverStrength: s.hoverStrength, intro: s.intro, paused: s.paused, speed: s.speed });
+      persistBall();
+      setPreset(key);
+      tick({});
+      wake();
+    };
+    const set = (k, v) => { settingsRef.current[k] = v; persistBall(); tick({}); wake(); };
+
+    const slider = f => (
+      <div className="ball-row" key={f.k}>
+        <div className="top"><label>{f.label}</label><span className="val">{settingsRef.current[f.k]}</span></div>
+        <input type="range" min={f.min} max={f.max} step={f.step} value={settingsRef.current[f.k]}
+          onChange={e => set(f.k, Number(e.target.value))} />
+      </div>
+    );
+
+    return (
+      <div className="w-full h-full relative select-none pointer-events-none">
+        <style>{BALL_UI_CSS}</style>
+        <div className="absolute left-1/2 -translate-x-1/2 w-[330px] sm:w-[min(460px,64vh)] md:w-[min(600px,64vh)] lg:w-[min(680px,64vh)] top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-[4vh] aspect-square pointer-events-auto">
+          <div ref={stageRef} className="w-full h-full" />
+        </div>
+        <div className="ball-rail">
+          <div className="ball-bar">
+          {Object.keys(BALL_PRESETS).map(k => (
+            <button key={k} type="button" className={'ball-chip' + (preset === k ? ' on' : '')} onClick={() => applyPreset(k)}>
+              <span className="ball-dot" style={{ background: BALL_PRESETS[k].color, color: BALL_PRESETS[k].color }} />
+              {k}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="ball-gear" aria-label="控制面板" aria-expanded={panelOpen}
+          onClick={() => setPanelOpen(!panelOpen)} dangerouslySetInnerHTML={{ __html: BALL_GEAR_ICON }} />
+        {panelOpen && (
+          <div className="ball-panel">
+            <h3>基础</h3>
+            <div className="ball-row"><div className="top"><label>主题</label></div>
+              <div className="ball-seg">
+                {['dark','light'].map(v => (
+                  <button key={v} type="button" className={settingsRef.current.theme === v ? 'on' : ''} onClick={() => set('theme', v)}>{v === 'dark' ? '深色' : '浅色'}</button>
+                ))}
+              </div>
+            </div>
+            <div className="ball-row"><div className="top"><label>球体颜色</label></div>
+              <input type="color" value={settingsRef.current.color} onChange={e => set('color', e.target.value)} />
+            </div>
+            <h3>丝线与光</h3>
+            {BALL_FIELDS.slice(0, 8).map(slider)}
+            <h3>粒子</h3>
+            {BALL_FIELDS.slice(8, 14).map(slider)}
+            <h3>运动</h3>
+            <div className="ball-row"><div className="top"><label>运动方式</label></div>
+              <div className="ball-seg">
+                {['rise','fall','drift','orbit'].map(m => (
+                  <button key={m} type="button" className={settingsRef.current.motion === m ? 'on' : ''} onClick={() => set('motion', m)}>{m}</button>
+                ))}
+              </div>
+            </div>
+            <div className="ball-row"><div className="top"><label>粒子形状</label></div>
+              <div className="ball-seg">
+                {['square','round'].map(m => (
+                  <button key={m} type="button" className={settingsRef.current.particleShape === m ? 'on' : ''} onClick={() => set('particleShape', m)}>{m}</button>
+                ))}
+              </div>
+            </div>
+            {slider(BALL_FIELDS[14])}
+            <h3>开关</h3>
+            <label className="ball-check"><input type="checkbox" checked={settingsRef.current.intro} onChange={e => set('intro', e.target.checked)} /> 入场动画</label>
+            <label className="ball-check"><input type="checkbox" checked={settingsRef.current.paused} onChange={e => set('paused', e.target.checked)} /> 暂停动画</label>
+          </div>
+        )}
+        </div>
+      </div>
+    );
+  };
+  CrystalBallHeroComponent.boot = boot;
+  return CrystalBallHeroComponent;
+})();
+const CrystalBallHero = CrystalBallBoot;
+
+const HeroSection = () => (
+  <section id="hero" className="relative h-screen flex flex-col overflow-x-clip bg-[#0C0C0C] text-[#D7E2EA]">
+    {/* Navbar */}
+    <FadeIn
+      as="nav"
+      delay={0}
+      y={-20}
+      className="flex justify-between px-6 md:px-10 pt-6 md:pt-8 text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem]"
+    >
+      {(SITE.nav || []).map((label, i) => {
+        const hrefs = ['#about', '#services', '#projects', '#contact'];
+        if (i === 3) {
+          return (
+            <a key={i} href="#contact" onClick={(e) => { e.preventDefault(); const el = document.getElementById('contact'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="transition-opacity duration-200 hover:opacity-70">
+              {label}
+            </a>
+          );
+        }
+        return (
+          <a key={i} href={hrefs[i] || '#'} className="transition-opacity duration-200 hover:opacity-70">
+            {label}
+          </a>
+        );
+      })}
+    </FadeIn>
+
+    {/* Hero heading（容器点击穿透，避免遮挡右侧控制栏） */}
+    <div className="overflow-hidden w-full relative z-20 pointer-events-none">
+      <FadeIn
+        as="h1"
+        delay={0.15}
+        y={40}
+        className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-center text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] mt-4 sm:mt-2 md:-mt-8 lg:-mt-12"
+      >
+        {SITE.heroTitle || 'Hi, i\'m LING'}
+      </FadeIn>
+    </div>
+
+    {/* Hero crystal ball（CrystalizedBall WebGL2，替换原人物图；控制按钮移至页面右侧） */}
+    <div className="absolute inset-0 z-10 pointer-events-none">
+      <FadeIn delay={0.6} y={30} className="w-full h-full">
+        <CrystalBallHero />
+      </FadeIn>
+    </div>
+
+    {/* Bottom bar */}
+    <div className="mt-auto flex justify-between items-end px-6 md:px-10 pb-7 sm:pb-8 md:pb-10">
+      <FadeIn
+        as="p"
+        delay={0.35}
+        y={20}
+        className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug text-[clamp(0.75rem,1.4vw,1.5rem)] max-w-[160px] sm:max-w-[220px] md:max-w-[260px]"
+      >
+        {SITE.heroSub || 'a 3d creator driven by crafting striking and unforgettable projects'}
+      </FadeIn>
+      <FadeIn delay={0.5} y={20}>
+        <ContactButton />
+      </FadeIn>
+    </div>
+  </section>
+);
+
+/* ============================================================
+   2. MARQUEE SECTION
+   ============================================================ */
+/* 首页滚动条图：已下载到本地 assets/，按顺序对应 marquee-01 ~ marquee-21 */
+const marqueeImages = [
+  'assets/marquee-01.gif',
+  'assets/marquee-02.gif',
+  'assets/marquee-03.gif',
+  'assets/marquee-04.gif',
+  'assets/marquee-05.gif',
+  'assets/marquee-06.gif',
+  'assets/marquee-07.gif',
+  'assets/marquee-08.gif',
+  'assets/marquee-09.png',
+  'assets/marquee-10.gif',
+  'assets/marquee-11.gif',
+  'assets/marquee-12.gif',
+  'assets/marquee-13.gif',
+  'assets/marquee-14.gif',
+  'assets/marquee-15.gif',
+  'assets/marquee-16.gif',
+  'assets/marquee-17.gif',
+  'assets/marquee-18.gif',
+  'assets/marquee-19.gif',
+  'assets/marquee-20.gif',
+  'assets/marquee-21.gif',
+];
+
+/* 首页轮播：改用与 circular-gallery-preview 一致的弧形轮播效果 */
+const MarqueeSection = () => (
+  <section className="bg-[#0C0C0C] pt-24 sm:pt-32 md:pt-40 pb-16 overflow-hidden">
+    <GalleryCoverflow images={SITE.marquee || marqueeImages} name="showcase" size="wide" noZoom noWheel />
+  </section>
+);
+
+/* ============================================================
+   3. ABOUT SECTION
+   ============================================================ */
+const aboutImages = {
+  moon: 'assets/about-moon.png',
+  object: 'assets/about-object.png',
+  lego: 'assets/about-lego.png',
+  group: 'assets/about-group.png',
+};
+
+/* CipherReveal — 进入视口后字母乱码，从左到右逐个锁定为最终文字；乱码仅限 A-Z/a-z */
+const CipherReveal = ({ text, className = '', replayToken = 0 }) => {
+  const ref = useRef(null);
+  const startRef = useRef(null);
+  const chars = Array.from(text);
+  const targets = chars.filter((c) => c !== ' ');
+  // 初始即渲染最终文字并全亮，保证任何情况下文字都可见，不会消失
+  const [display, setDisplay] = useState(() => chars.slice());
+
+  useEffect(() => {
+    let timer = null;
+    let locked = targets.map(() => false);
+    const lockTimes = targets.map((_, i) => ((i + 1) / targets.length) * 1400);
+    const randLetter = () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 52)];
+
+    const startDecode = () => {
+      locked = targets.map(() => false);
+      setDisplay(chars.map((c) => (c === ' ' ? ' ' : randLetter())));
+      const start = performance.now();
+      clearInterval(timer);
+      timer = setInterval(() => {
+        const elapsed = (performance.now() - start) / 1000;
+        let allLocked = true;
+        targets.forEach((_, ti) => { if (elapsed < lockTimes[ti] / 1000) allLocked = false; });
+        setDisplay((prev) => {
+          const next = prev.slice();
+          let ti = 0;
+          chars.forEach((ch, i) => {
+            if (ch === ' ') return;
+            if (locked[ti]) { ti++; return; }
+            if (elapsed >= lockTimes[ti] / 1000) {
+              locked[ti] = true;
+              next[i] = targets[ti];
+            } else {
+              next[i] = randLetter();
+            }
+            ti++;
+          });
+          return next;
+        });
+        if (allLocked) clearInterval(timer);
+      }, 1000 / 14);
+    };
+
+    startRef.current = startDecode;
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { startDecode(); io.disconnect(); }
+      });
+    }, { threshold: 0.3 });
+    io.observe(ref.current);
+
+    return () => { io.disconnect(); clearInterval(timer); };
+  }, [text]);
+
+  // replayToken 变化时重播一次解码动画
+  useEffect(() => {
+    if (replayToken > 0 && startRef.current) startRef.current();
+  }, [replayToken]);
+
+  return (
+    <p ref={ref} className={className} style={{ color: '#D7E2EA' }}>
+      {display.map((ch, i) => (ch === ' ' ? '\u00A0' : ch))}
+    </p>
+  );
+};
+
+/* ============================================================
+   About 文案：整段文字只需修改下面两个常量即可替换，无需动样式
+   ============================================================ */
+const ABOUT_LINE_1 = 'LING｜李林营｜三年商业实践';
+const ABOUT_LINE_2 = '灵感散落于日常、旅途与旋律之间 不断尝试新工具，琢磨表达想让理性的设计逻辑，长出温柔的视觉温度。';
+
+/* GradientText — 从第一个字到最后一个字逐字渐变（品牌灰 #646973 → 浅蓝 #BBCCD7） */
+const GradientText = ({ text, className = '' }) => {
+  const chars = Array.from(text);
+  const from = [0xBB, 0xCC, 0xD7];
+  const to = [0x64, 0x69, 0x73];
+  return (
+    <p className={className}>
+      {chars.map((ch, i) => {
+        const t = chars.length > 1 ? i / (chars.length - 1) : 0;
+        const r = Math.round(from[0] + (to[0] - from[0]) * t);
+        const g = Math.round(from[1] + (to[1] - from[1]) * t);
+        const b = Math.round(from[2] + (to[2] - from[2]) * t);
+        return <span key={i} style={{ color: `rgb(${r}, ${g}, ${b})` }}>{ch}</span>;
+      })}
+    </p>
+  );
+};
+
+const AboutSection = () => {
+  const [replayToken, setReplayToken] = useState(0);
+  return (
+  <section id="about" className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-8 md:px-10 py-20 bg-[#0C0C0C]">
+    {/* Decorative 3D images — corners */}
+    <div className="absolute top-[4%] left-[1%] sm:left-[2%] md:left-[4%]">
+      <FadeIn delay={0.1} x={-80} y={0} duration={0.9}>
+        <img src={(SITE.aboutImages && SITE.aboutImages.moon) || aboutImages.moon} alt="3D moon icon" className="w-[120px] sm:w-[160px] md:w-[210px]" />
+      </FadeIn>
+    </div>
+    <div className="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%]">
+      <FadeIn delay={0.25} x={-80} y={0} duration={0.9}>
+        <img src={(SITE.aboutImages && SITE.aboutImages.object) || aboutImages.object} alt="3D object" className="w-[100px] sm:w-[140px] md:w-[180px]" />
+      </FadeIn>
+    </div>
+    <div className="absolute top-[4%] right-[1%] sm:right-[2%] md:right-[4%]">
+      <FadeIn delay={0.15} x={80} y={0} duration={0.9}>
+        <img src={(SITE.aboutImages && SITE.aboutImages.lego) || aboutImages.lego} alt="Lego icon" className="w-[120px] sm:w-[160px] md:w-[210px]" />
+      </FadeIn>
+    </div>
+    <div className="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%]">
+      <FadeIn delay={0.3} x={80} y={0} duration={0.9}>
+        <img src={(SITE.aboutImages && SITE.aboutImages.group) || aboutImages.group} alt="3D group" className="w-[130px] sm:w-[170px] md:w-[220px]" />
+      </FadeIn>
+    </div>
+
+    {/* Heading */}
+    <FadeIn as="h2" delay={0} y={40} className="hero-heading font-black uppercase leading-none tracking-tight text-center text-[clamp(3rem,12vw,160px)]">
+      {SITE.aboutHeading || 'About me'}
+    </FadeIn>
+
+    {/* Cipher reveal paragraph */}
+    <div className="mt-10 sm:mt-14 md:mt-16 flex flex-col items-center gap-4 sm:gap-5">
+      <CipherReveal
+        replayToken={replayToken}
+        className="font-medium text-center leading-relaxed max-w-[560px] text-[clamp(1rem,2vw,1.35rem)]"
+        text={SITE.about1 || ABOUT_LINE_1}
+      />
+      <CipherReveal
+        replayToken={replayToken}
+        className="font-medium text-center leading-relaxed max-w-[560px] text-[clamp(1rem,2vw,1.35rem)]"
+        text={SITE.about2 || ABOUT_LINE_2}
+      />
+    </div>
+
+    {/* Replay scramble button */}
+    <div className="mt-16 sm:mt-20 md:mt-24">
+      <FadeIn delay={0.2} y={20}>
+        <button
+          type="button"
+          onClick={() => setReplayToken((t) => t + 1)}
+          className="inline-block rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base hover:bg-[#D7E2EA]/10 transition-colors duration-200"
+        >
+          {SITE.replayLabel || 'one more time'}
+        </button>
+      </FadeIn>
+    </div>
+  </section>
+  );
+}
+
+/* ============================================================
+   4. SERVICES SECTION
+   ============================================================ */
+const services = [
+  {
+    num: '01',
+    name: '3D Modeling',
+    desc: 'Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.',
+  },
+  {
+    num: '02',
+    name: 'Rendering',
+    desc: 'High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.',
+  },
+  {
+    num: '03',
+    name: 'Motion Design',
+    desc: 'Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.',
+  },
+  {
+    num: '04',
+    name: 'Branding',
+    desc: 'Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.',
+  },
+  {
+    num: '05',
+    name: 'Web Design',
+    desc: 'Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.',
+  },
+];
+
+const ServicesSection = () => (
+  <section id="services" className="bg-[#FFFFFF] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
+    <FadeIn as="h2" delay={0} y={40} className="text-[#0C0C0C] font-black uppercase text-center leading-none tracking-tight text-[clamp(3rem,12vw,160px)] mb-16 sm:mb-20 md:mb-28">
+      {SITE.servicesHeading || 'Services'}
+    </FadeIn>
+
+    <div className="max-w-5xl mx-auto">
+      {(SITE.services || []).map((s, i) => (
+        <FadeIn
+          key={s.num}
+          delay={i * 0.1}
+          y={30}
+          className={`flex items-center gap-6 sm:gap-10 md:gap-16 py-8 sm:py-10 md:py-12 ${i < SITE.services.length - 1 ? 'border-b border-[rgba(12,12,12,0.15)]' : ''}`}
+        >
+          <span className="text-[#0C0C0C] font-black leading-none text-[clamp(3rem,10vw,140px)]">{s.num}</span>
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-[#0C0C0C] font-medium uppercase leading-tight text-[clamp(1rem,2.2vw,2.1rem)]">{s.name}</h3>
+            <p className="text-[#0C0C0C] font-light leading-relaxed max-w-2xl text-[clamp(0.85rem,1.6vw,1.25rem)] opacity-60 mt-2">{s.desc}</p>
+          </div>
+        </FadeIn>
+      ))}
+    </div>
+  </section>
+);
+
+/* ============================================================
+   5. PROJECTS SECTION — sticky stacking cards
+   ============================================================ */
+/* 项目图已下载到本地 assets/，替换图片时把相对路径填进对应字段即可 */
+const projects = [
+  {
+    num: '01',
+    name: 'Nextlevel Studio',
+    category: 'Client',
+    desc: '以大胆的空间语言与未来感的视觉基调，为新兴数字品牌建立清晰、可扩展的识别系统，让每一处触点保持一致的体验。',
+    col1: [
+      'assets/proj-01a.webp',
+      'assets/proj-01b.webp',
+    ],
+    col2: 'assets/proj-01c.webp',
+    // 画廊：增删图片路径即可调整弧形画廊卡片数量（12 张，与 circular-gallery-preview 一致的密度）
+    gallery: [
+      'assets/proj-01a.webp',
+      'assets/proj-01b.webp',
+      'assets/proj-01c.webp',
+      'assets/proj-02a.webp',
+      'assets/proj-02b.webp',
+      'assets/proj-02c.webp',
+      'assets/proj-03a.webp',
+      'assets/proj-03b.webp',
+      'assets/proj-03c.webp',
+      'assets/proj-01a.webp',
+      'assets/proj-01b.webp',
+      'assets/proj-01c.webp',
+    ],
+  },
+  {
+    num: '02',
+    name: 'Aura Brand Identity',
+    category: 'Personal',
+    desc: '以“理性、高效、专业”为视觉线索，把成分护肤的科学逻辑转化为清晰、统一的产品包装体系。',
+    col1: [
+      'assets/proj-02a.webp',
+      'assets/proj-02b.webp',
+    ],
+    col2: 'assets/proj-02c.webp',
+    // 画廊：增删图片路径即可调整弧形画廊卡片数量（12 张，与 circular-gallery-preview 一致的密度）
+    gallery: [
+      'assets/proj-02a.webp',
+      'assets/proj-02b.webp',
+      'assets/proj-02c.webp',
+      'assets/proj-01a.webp',
+      'assets/proj-01b.webp',
+      'assets/proj-01c.webp',
+      'assets/proj-03a.webp',
+      'assets/proj-03b.webp',
+      'assets/proj-03c.webp',
+      'assets/proj-02a.webp',
+      'assets/proj-02b.webp',
+      'assets/proj-02c.webp',
+    ],
+  },
+  {
+    num: '03',
+    name: 'Solaris Digital',
+    category: 'Client',
+    desc: '以光的层次与秩序为视觉母题，将抽象的数字服务转译为跨媒介一致的品牌体验。',
+    col1: [
+      'assets/proj-03a.webp',
+      'assets/proj-03b.webp',
+    ],
+    col2: 'assets/proj-03c.webp',
+    // 画廊：增删图片路径即可调整弧形画廊卡片数量（12 张，与 circular-gallery-preview 一致的密度）
+    gallery: [
+      'assets/proj-03a.webp',
+      'assets/proj-03b.webp',
+      'assets/proj-03c.webp',
+      'assets/proj-01a.webp',
+      'assets/proj-01b.webp',
+      'assets/proj-01c.webp',
+      'assets/proj-02a.webp',
+      'assets/proj-02b.webp',
+      'assets/proj-02c.webp',
+      'assets/proj-03a.webp',
+      'assets/proj-03b.webp',
+      'assets/proj-03c.webp',
+    ],
+  },
+];
+
+/* 用默认数据填充 SITE（本机保存过的配置会覆盖对应字段） */
+if (!SITE.services || !SITE.services.length) SITE.services = services;
+if (!SITE.projects || !SITE.projects.length) SITE.projects = projects;
+if (SITE.projects) SITE.projects.forEach((p, i) => { if (p.desc === undefined && projects[i] && projects[i].desc) p.desc = projects[i].desc; });
+if (!SITE.heroTitle) SITE.heroTitle = 'Hi, i\'m LING';
+if (!SITE.heroSub) SITE.heroSub = 'a 3d creator driven by crafting striking and unforgettable projects';
+if (!SITE.nav || !SITE.nav.length) SITE.nav = ['About', 'Price', 'Projects', 'Contact'];
+if (!SITE.contactLabel) SITE.contactLabel = 'Contact Me';
+if (!SITE.aboutHeading) SITE.aboutHeading = 'About me';
+if (!SITE.about1) SITE.about1 = 'LING｜李林营｜三年商业实践';
+if (!SITE.about2) SITE.about2 = '灵感散落于日常、旅途与旋律之间 不断尝试新工具，琢磨表达想让理性的设计逻辑，长出温柔的视觉温度。';
+if (!SITE.replayLabel) SITE.replayLabel = 'one more time';
+if (!SITE.servicesHeading) SITE.servicesHeading = 'Services';
+if (!SITE.projectsHeading) SITE.projectsHeading = 'Project';
+if (!SITE.liveLabel) SITE.liveLabel = 'Live Project';
+if (!SITE.aboutImages || !Object.keys(SITE.aboutImages).length) SITE.aboutImages = aboutImages;
+if (!SITE.marquee || !SITE.marquee.length) SITE.marquee = marqueeImages;
+if (!SITE.fontFamily) SITE.fontFamily = 'Kanit';
+if (SITE.fontFamily) applyFont(SITE.fontFamily);
+if (!SITE.contactHeading) SITE.contactHeading = '一起做一个更会的想法。';
+if (!SITE.contactDesc) SITE.contactDesc = '欢迎联系求职机会、项目合作或作品集交流。';
+if (!SITE.contactPhone) SITE.contactPhone = '13253528395';
+if (!SITE.contactEmail) SITE.contactEmail = '2196618702@qq.com';
+if (!SITE.resumeData) SITE.resumeData = '';
+
+/* 记录从首页进入项目详情时的滚动位置，点 X 返回时恢复 */
+let savedScrollY = 0;
+
+const ProjectCard = ({ project, index, total, progress }) => {
+  const targetScale = 1 - (total - 1 - index) * 0.03;
+  const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
+
+  return (
+    <div className="sticky top-24 md:top-32 h-[85vh] flex justify-center">
+      <motion.div
+        onClick={() => { savedScrollY = window.scrollY; window.location.hash = `#project-0${index + 1}`; }}
+        style={{ scale, top: `${index * 28}px`, position: 'relative', transformOrigin: 'top center', height: '830px' }}
+        className="w-full max-w-[1320px] rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 cursor-pointer"
+      >
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-4 sm:gap-6">
+          <span className="text-[#D7E2EA] font-black leading-none text-[clamp(3rem,10vw,140px)]">{project.num}</span>
+          <div className="flex flex-col items-start justify-center pt-2 sm:pt-3 md:pt-4 min-w-0">
+            <span className="text-[#D7E2EA]/60 font-light uppercase tracking-widest text-xs sm:text-sm">{project.category}</span>
+            <h3 className="text-[#D7E2EA] font-medium uppercase leading-tight text-[clamp(1rem,2.2vw,2.1rem)]">{project.name}</h3>
+          </div>
+          <div className="shrink-0">
+            <LiveProjectButton projectIndex={index} />
+          </div>
+        </div>
+
+        {/* Bottom row — image grid (40% / 60%) */}
+        <div className="flex gap-4 sm:gap-6 mt-4 sm:mt-6 md:mt-8">
+          <div className="flex flex-col gap-4 sm:gap-6" style={{ width: '40%' }}>
+            <img
+              src={project.col1[0]}
+              alt={`${project.name} — visual 1`}
+              loading="lazy"
+              className="w-full object-cover rounded-[40px] sm:rounded-[50px] md:rounded-[60px]"
+              style={{ height: 'clamp(130px,16vw,230px)' }}
+            />
+            <img
+              src={project.col1[1]}
+              alt={`${project.name} — visual 2`}
+              loading="lazy"
+              className="w-full object-cover rounded-[40px] sm:rounded-[50px] md:rounded-[60px]"
+              style={{ height: 'clamp(160px,22vw,340px)' }}
+            />
+          </div>
+          <div style={{ width: '60%' }}>
+            <img
+              src={project.col2}
+              alt={`${project.name} — visual 3`}
+              loading="lazy"
+              className="w-full h-full object-cover rounded-[40px] sm:rounded-[50px] md:rounded-[60px]"
+            />
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const ProjectsSection = () => {
+  const container = useRef(null);
+  const { scrollYProgress } = useScroll({ target: container, offset: ['start start', 'end end'] });
+
+  return (
+    <section id="projects" className="relative z-10 -mt-10 sm:-mt-12 md:-mt-14 bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 pt-20 sm:pt-24 md:pt-28 pb-24 sm:pb-32 md:pb-40">
+      <FadeIn as="h2" delay={0} y={40} className="hero-heading font-black uppercase leading-none tracking-tight text-center text-[clamp(3rem,12vw,160px)] mb-16 sm:mb-20 md:mb-28">
+        {SITE.projectsHeading || 'Project'}
+      </FadeIn>
+
+      <div ref={container} className="relative">
+        {(SITE.projects || []).map((p, i) => (
+          <ProjectCard key={p.num} project={p} index={i} total={SITE.projects.length} progress={scrollYProgress} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+/* ============================================================
+   GalleryCoverflow — 详情页弧形卡片：拖拽/滚轮/方向键切换，悬停轻抬，点击放大
+   ============================================================ */
+function GalleryCoverflow({ images, name, size = 'portrait', noZoom = false, noWheel = false }) {
+  const stageRef = useRef(null);
+  const cardRefs = useRef([]);
+  const [openIdx, setOpenIdx] = useState(-1);
+  const st = useRef({ current: 0, target: 0, dragging: false, sx: 0, start: 0, moved: false, raf: 0, downCard: null });
+
+  const N = (images && images.length) || 0;
+
+  useEffect(() => {
+    if (!N) return;
+    const s = st.current;
+    const stage = stageRef.current;
+    const gap = size === 'wide' ? 547 : 300;
+    const norm = (rel) => {
+      rel = rel % N;
+      if (rel > N / 2) rel -= N;
+      if (rel < -N / 2) rel += N;
+      return rel;
+    };
+    const layout = () => {
+      for (let i = 0; i < N; i++) {
+        const rel = norm(i - s.current);
+        const abs = Math.abs(rel);
+        // 与最新 circular-gallery-preview 一致：间距 300、下沉 30、外倾 9°、邻卡 0.94
+        const x = rel * gap, y = abs * 30, rot = rel * 9;
+        const scale = Math.max(0.7, 1 - abs * 0.06);
+        let op;
+        if (abs > 2.3) op = 0;
+        else if (abs > 1.6) op = 0.25;
+        else if (abs > 0.5) op = 0.95;
+        else op = 1;
+        const el = cardRefs.current[i];
+        if (!el) continue;
+        el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg) scale(${scale})`;
+        el.style.opacity = op.toFixed(3);
+        el.style.zIndex = Math.round(100 - abs);
+      }
+    };
+    /* 缓慢从右往左自动旋转：每帧推进 0.003 张（约 5 秒一张），悬停/拖拽暂停，尊重系统减弱动效 */
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const driftStep = reduceMotion ? 0 : 0.0015;
+    let driftPaused = false;
+    const tick = () => {
+      if (!s.dragging && !driftPaused) s.target += driftStep;
+      s.current += (s.target - s.current) * 0.05;
+      if (Math.abs(s.target - s.current) < 0.001) s.current = s.target;
+      layout();
+      s.raf = requestAnimationFrame(tick);
+    };
+    s.raf = requestAnimationFrame(tick);
+    /* 悬停暂停缩小到卡片本身：指针落在任意一张卡片上才暂停旋转 */
+    const onEnter = () => { driftPaused = true; };
+    const onLeave = () => { driftPaused = false; };
+    cardRefs.current.slice(0, N).forEach((el) => {
+      if (el) { el.addEventListener('pointerenter', onEnter); el.addEventListener('pointerleave', onLeave); }
+    });
+
+    const onDown = (e) => {
+      s.dragging = true; s.moved = false; s.sx = e.clientX; s.start = s.target;
+      s.downCard = e.target && e.target.closest ? e.target.closest('.cf-card') : null;
+      stage.dataset.dragging = '1';
+      stage.setPointerCapture(e.pointerId);
+    };
+    const onMove = (e) => {
+      if (!s.dragging) return;
+      const dx = e.clientX - s.sx;
+      if (Math.abs(dx) > 8) s.moved = true;
+      s.target = s.start - dx / 180;
+    };
+    const onUp = () => {
+      if (!s.dragging) return;
+      s.dragging = false;
+      delete stage.dataset.dragging;
+      s.target = Math.round(s.target);
+      // 单击（无拖拽）卡片 -> 展开大图。pointer capture 会把 click 事件重定向到 stage，
+      // 因此在这里用 pointerup 判定，保证点击一定能展开。
+      if (!s.moved && s.downCard) {
+        const idx = cardRefs.current.indexOf(s.downCard);
+        if (idx >= 0) setOpenIdx(idx);
+      }
+      s.downCard = null;
+    };
+    const onWheel = (e) => {
+      e.preventDefault();
+      s.target = Math.round(s.target) + (e.deltaY > 0 ? 1 : -1);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setOpenIdx(-1); return; }
+      if (['ArrowRight', 'ArrowDown'].includes(e.key)) s.target = Math.round(s.target) + 1;
+      if (['ArrowLeft', 'ArrowUp'].includes(e.key)) s.target = Math.round(s.target) - 1;
+    };
+    stage.addEventListener('pointerdown', onDown);
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerup', onUp);
+    stage.addEventListener('pointercancel', onUp);
+    stage.addEventListener('pointerleave', onUp);
+    if (!noWheel) stage.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKey);
+    return () => {
+      cancelAnimationFrame(s.raf);
+      stage.removeEventListener('pointerdown', onDown);
+      stage.removeEventListener('pointermove', onMove);
+      stage.removeEventListener('pointerup', onUp);
+      stage.removeEventListener('pointercancel', onUp);
+      stage.removeEventListener('pointerleave', onUp);
+      cardRefs.current.slice(0, N).forEach((el) => {
+        if (el) { el.removeEventListener('pointerenter', onEnter); el.removeEventListener('pointerleave', onLeave); }
+      });
+      if (!noWheel) stage.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [N, size, noWheel]);
+
+  if (!N) return null;
+
+  return (
+    <div className="w-full relative">
+      <div className={`cf-stage${size === 'wide' ? ' cf-stage--wide' : ''}`} ref={stageRef}>
+        {images.map((src, i) => (
+          <div
+            key={i}
+            className={`cf-card${size === 'wide' ? ' cf-card--wide' : ''}`}
+            ref={(el) => (cardRefs.current[i] = el)}
+            onClick={() => { if (!noZoom && !st.current.moved) setOpenIdx(i); }}
+          >
+            <div className="cf-pic">
+              <img src={src} alt={`${name} — ${i + 1}`} loading="lazy" draggable="false" />
+              <div className="cf-shine" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 单击卡片后：大图悬浮在轮播图前方并遮挡（Esc 或点击暗色区域关闭，无 × 按钮）；noZoom 时不启用 */}
+      {!noZoom && openIdx >= 0 && (
+        <div className="cf-float" onClick={(e) => { if (e.target === e.currentTarget) setOpenIdx(-1); }}>
+          <img src={images[openIdx]} alt={`${name} — enlarged ${openIdx + 1}`} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
+   GalleryModal — 项目详情弹窗（参考 gallery 预览样式）：
+   居中圆角窗口 + 弹窗内纵向流畅滚动画廊 + 右侧滑动指示栏 + 右上关闭
+   ============================================================ */
+const GalleryModal = ({ project }) => {
+  const images = project.gallery || [];
+  const n = images.length;
+  const bodyRef = useRef(null);
+  const [prog, setProg] = useState({ top: 0, viewH: 0, scrollH: 0 });
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const update = () => setProg({ top: el.scrollTop, viewH: el.clientHeight, scrollH: el.scrollHeight });
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => { el.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
+  }, []);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') { window.location.hash = ''; } };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const { top, viewH, scrollH } = prog;
+  const barPad = 48; // 指示栏避开上下留白（与容器 h-[calc(100%-48px)] 一致）
+  const barH = viewH - barPad;
+  const ratio = viewH > 0 && scrollH > viewH ? viewH / scrollH : 0;
+  const thumbH = ratio > 0 ? Math.max(26, ratio * barH) : 0;
+  const thumbTop = ratio > 0 && scrollH > viewH ? (top / (scrollH - viewH)) * (barH - thumbH) : 0;
+  return (
+    <main className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] overflow-x-clip flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+      <div className="gm-window relative w-full max-w-[1120px] h-[86vh] rounded-[26px] sm:rounded-[34px] border border-white/10 bg-[#141417] shadow-[0_40px_120px_rgba(0,0,0,.75)] overflow-hidden">
+        {/* 关闭按钮 — 窗口右上角 */}
+        <button
+          type="button"
+          aria-label="close gallery"
+          onClick={() => { window.location.hash = ''; }}
+          className="absolute top-4 right-4 z-50 w-11 h-11 rounded-full grid place-items-center text-[#D7E2EA] opacity-80 hover:opacity-100 hover:bg-white/10 transition-colors duration-200"
+        >
+          <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* 右侧滑动指示栏 */}
+        {ratio > 0 && (
+          <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-[3px] h-[calc(100%-48px)] rounded-full bg-white/10 pointer-events-none">
+            <div
+              className="absolute left-0 w-full rounded-full bg-[#9478FF]/80"
+              style={{ top: thumbTop, height: thumbH }}
+            />
+          </div>
+        )}
+
+        {/* 滚动内容 — 流畅跟手滚动（无吸附） */}
+        <div ref={bodyRef} className="gm-scroll h-full overflow-y-auto overflow-x-hidden pr-4 sm:pr-6">
+          <div>
+            {/* 信息区 — 左对齐（位置保持原样） */}
+            <div className="px-6 sm:px-10 md:px-12 pt-8 sm:pt-10 md:pt-12 pb-6 sm:pb-8 pr-16 sm:pr-20">
+              <span className="text-[#9478FF]/90 font-light uppercase tracking-[0.25em] text-xs sm:text-sm">{project.category}</span>
+              <h2 className="hero-heading font-black uppercase leading-none tracking-tight mt-2 sm:mt-3 text-[clamp(1.8rem,4.5vw,3.6rem)]">{project.name}</h2>
+              {project.desc && (
+                <p className="text-[#D7E2EA]/65 font-light leading-relaxed max-w-2xl mt-3 sm:mt-4 text-[clamp(0.85rem,1.4vw,1.05rem)]">{project.desc}</p>
+              )}
+            </div>
+
+            {/* 图片列表 — 居中，最大宽度与文字左侧对齐（同左内边距） */}
+            <div className="flex flex-col items-center gap-5 sm:gap-7 px-6 sm:px-10 md:px-12 pb-12">
+              {n > 0 ? (
+                images.map((src, i) => (
+                  <img key={i} src={src} alt={`${project.name} — page ${i + 1}`} loading="lazy" draggable="false"
+                    className="w-full h-auto rounded-2xl shrink-0" />
+                ))
+              ) : (
+                <div className="w-full h-[40vh] rounded-2xl grid place-items-center text-white/25 text-sm">暂无图片</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+/* ============================================================
+   ProjectDetail — internal project page (hash route #project-0N)
+   ============================================================ */
+const ProjectDetail = ({ project }) => <GalleryModal project={project} />;
+
+/* ============================================================
+   Hash routing: #project-0N opens the internal detail page
+   ============================================================ */
+function readRoute() {
+  const h = window.location.hash.replace(/^#/, '');
+  const m = h.match(/^project-0?(\d+)$/);
+  if (m) {
+    const index = parseInt(m[1], 10) - 1;
+    if (index >= 0 && index < SITE.projects.length) return { type: 'project', index };
+  }
+  return { type: 'home' };
+}
+
+/* ============================================================
+   隐藏后台面板：仅在访问  #admin/ling2026  时出现，页面上无任何入口
+   本机编辑 + 导出 JSON，自行重新打包；不做远程数据库/账号登录
+   ============================================================ */
+/* 字体选项与动态加载（沿用 jsDelivr fontsource 字体镜像） */
+function fontOptions() {
+  return [
+    { label: 'Kanit（默认）', family: 'Kanit', subset: 'latin' },
+    { label: 'Space Grotesk', family: 'Space Grotesk', subset: 'latin' },
+    { label: 'Montserrat', family: 'Montserrat', subset: 'latin' },
+    { label: 'Poppins', family: 'Poppins', subset: 'latin' },
+    { label: 'Inter', family: 'Inter', subset: 'latin' },
+    { label: '思源黑体 Noto Sans SC', family: 'Noto Sans SC', subset: 'chinese-simplified' },
+  ];
+}
+function applyFont(family) {
+  const opt = fontOptions().find((o) => o.family === family) || fontOptions()[0];
+  const base = `https://cdn.jsdelivr.net/fontsource/fonts/${opt.family.toLowerCase().replace(/ /g, '-')}@latest/`;
+  let st = document.getElementById('dynamic-font-face');
+  if (!st) {
+    st = document.createElement('style');
+    st.id = 'dynamic-font-face';
+    document.head.appendChild(st);
+  }
+  st.textContent = [400, 600, 700]
+    .map((w) => `@font-face{font-family:'${opt.family}';font-style:normal;font-weight:${w};font-display:swap;src:url(${base}${opt.subset}-${w}-normal.woff2) format('woff2');}`)
+    .join('');
+  document.documentElement.style.setProperty('--site-font', `'${opt.family}', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif`);
+  SITE.fontFamily = family;
+}
+
+/* 本地上传图片：过大时压缩为 dataURL（长边 1600、JPEG 0.85），保证可随配置保存 */
+function compressImage(dataUrl, maxEdge, quality, cb) {
+  const img = new Image();
+  img.onload = () => {
+    let w = img.naturalWidth || img.width;
+    let h = img.naturalHeight || img.height;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    w = Math.max(1, Math.round(w * scale));
+    h = Math.max(1, Math.round(h * scale));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(c.toDataURL('image/jpeg', quality));
+  };
+  img.onerror = () => showToast('图片读取失败');
+  img.src = dataUrl;
+}
+
+/* 动态压缩：从高画质档逐级降低，直到压缩结果约 300KB（dataURL 约 410K 字符），兼顾清晰度与存储 */
+function compressToTarget(dataUrl, cb) {
+  const img = new Image();
+  img.onload = () => {
+    const nw = img.naturalWidth || img.width;
+    const nh = img.naturalHeight || img.height;
+    const TARGET = 410000; // ≈ 300KB 图片文件
+    const stages = [
+      { maxEdge: 1920, q: 0.85 },
+      { maxEdge: 1600, q: 0.8 },
+      { maxEdge: 1440, q: 0.75 },
+      { maxEdge: 1280, q: 0.7 },
+      { maxEdge: 1120, q: 0.65 },
+      { maxEdge: 960, q: 0.6 },
+      { maxEdge: 800, q: 0.55 }
+    ];
+    let s = 0;
+    const tryStage = () => {
+      if (s >= stages.length) { cb(dataUrl); return; }
+      const st = stages[s];
+      const scale = Math.min(1, st.maxEdge / Math.max(nw, nh));
+      const w = Math.max(1, Math.round(nw * scale));
+      const h = Math.max(1, Math.round(nh * scale));
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      const out = c.toDataURL('image/jpeg', st.q);
+      if (out.length <= TARGET || s === stages.length - 1) { cb(out); return; }
+      s += 1;
+      tryStage();
+    };
+    tryStage();
+  };
+  img.onerror = () => showToast('图片读取失败');
+  img.src = dataUrl;
+}
+
+const AdminPanel = ({ onRefresh }) => {
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState('basic');
+  const [marqueeUrl, setMarqueeUrl] = useState('');
+  const marqueeFileRef = useRef(null);
+  const resumeFileRef = useRef(null);
+
+  useEffect(() => {
+    // 开关式：仅在进入 #admin/ling2026 时打开；关闭只由面板关闭按钮触发，
+    // 不再因切换页面路由（如打开 PROJECT 详情 #project-01）而自动退出
+    const check = () => { if (window.location.hash === '#admin/ling2026') setOpen(true); };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, []);
+
+  if (!open) return null;
+
+  const refresh = () => { if (typeof onRefresh === 'function') onRefresh(); };
+
+  const setService = (i, key, val) => { SITE.services[i][key] = val; refresh(); };
+  const addService = () => {
+    SITE.services.push({ num: String(SITE.services.length + 1).padStart(2, '0'), name: 'New Service', desc: 'Service description...' });
+    refresh();
+  };
+  const delService = (i) => { SITE.services.splice(i, 1); refresh(); };
+
+  const setProject = (i, key, val) => { SITE.projects[i][key] = val; refresh(); };
+  const setProjectImg = (i, idx, val) => { SITE.projects[i].col1[idx] = val; refresh(); };
+  const setProjectGallery = (i, val) => { SITE.projects[i].gallery = val.split('\n').filter(Boolean); refresh(); };
+  const addProject = () => {
+    SITE.projects.push({ num: String(SITE.projects.length + 1).padStart(2, '0'), name: 'New Project', category: 'Client', desc: '', col1: ['', ''], col2: '', gallery: [] });
+    refresh();
+  };
+  const delProject = (i) => { SITE.projects.splice(i, 1); refresh(); };
+
+  const setNav = (i, val) => { SITE.nav[i] = val; refresh(); };
+  const setAboutImg = (key, val) => { SITE.aboutImages[key] = val; refresh(); };
+  const setMarquee = (val) => {
+    const lines = val.split('\n').map((s) => s.trim()).filter(Boolean);
+    const dataParts = (SITE.marquee || []).filter((m) => typeof m === 'string' && m.indexOf('data:') === 0);
+    SITE.marquee = lines.concat(dataParts);
+    refresh();
+  };
+  const setFont = (family) => { applyFont(family); refresh(); };
+  const onMarqueeFile = (e) => {
+    const files = Array.prototype.slice.call((e.target.files) || []);
+    e.target.value = '';
+    if (!files.length) return;
+    let added = 0;
+    let done = 0;
+    const results = [];
+    const total = files.filter((f) => /^image\//.test(f.type)).length;
+    if (!total) { showToast('请选择图片文件'); return; }
+    const tryDone = () => {
+      done += 1;
+      if (done >= total) {
+        results.forEach((r) => { if (r) SITE.marquee.push(r); });
+        refresh();
+        showToast('已按选择顺序追加 ' + added + ' 张图片');
+      }
+    };
+    files.forEach((file, idx) => {
+      if (!/^image\//.test(file.type)) { showToast('已跳过非图片文件'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const url = reader.result;
+        const put = (out) => { results[idx] = out; added += 1; tryDone(); };
+        if (url.length > 420000) compressToTarget(url, put);
+        else put(url);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  const onResumeFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) { showToast('请选择 PDF 文件'); return; }
+    if (file.size > 4000000) { showToast('简历过大，请压缩至 4MB 以内'); return; }
+    const reader = new FileReader();
+    reader.onload = () => { SITE.resumeData = reader.result; refresh(); showToast('简历已上传'); };
+    reader.readAsDataURL(file);
+  };
+  const onGalleryFile = (i, e) => {
+    const files = Array.prototype.slice.call((e.target.files) || []);
+    e.target.value = '';
+    if (!files.length) return;
+    let added = 0;
+    let done = 0;
+    const results = [];
+    const total = files.filter((f) => /^image\//.test(f.type)).length;
+    if (!total) { showToast('请选择图片文件'); return; }
+    const tryDone = () => {
+      done += 1;
+      if (done >= total) {
+        if (!SITE.projects[i].gallery) SITE.projects[i].gallery = [];
+        results.forEach((r) => { if (r) SITE.projects[i].gallery.push(r); });
+        refresh();
+        showToast('已按选择顺序追加 ' + added + ' 张画廊图');
+      }
+    };
+    files.forEach((file, idx) => {
+      if (!/^image\//.test(file.type)) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const url = reader.result;
+        const put = (out) => { results[idx] = out; added += 1; tryDone(); };
+        if (url.length > 420000) compressToTarget(url, put);
+        else put(url);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const payload = () => ({
+    heroTitle: SITE.heroTitle, heroSub: SITE.heroSub, nav: SITE.nav,
+    contactLabel: SITE.contactLabel, contactUrl: SITE.contactUrl,
+    aboutHeading: SITE.aboutHeading, about1: SITE.about1, about2: SITE.about2,
+    replayLabel: SITE.replayLabel, servicesHeading: SITE.servicesHeading,
+    projectsHeading: SITE.projectsHeading, liveLabel: SITE.liveLabel,
+    heroPortrait: SITE.heroPortrait, aboutImages: SITE.aboutImages,
+    marquee: SITE.marquee, fontFamily: SITE.fontFamily,
+    contactHeading: SITE.contactHeading, contactDesc: SITE.contactDesc,
+    contactPhone: SITE.contactPhone, contactEmail: SITE.contactEmail,
+    resumeData: SITE.resumeData,
+    services: SITE.services, projects: SITE.projects,
+  });
+  /* 保存兜底：配额超限时把所有 base64 图片二次压缩（长边 900、JPEG 0.55）后重试保存 */
+  const compressAllForSave = (cb) => {
+    const targets = [];
+    const collect = (obj, key) => {
+      const v = obj[key];
+      if (v && typeof v === 'string' && v.indexOf('data:') === 0) targets.push([obj, key, v]);
+    };
+    const collectArr = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((v, i) => {
+        if (v && typeof v === 'string' && v.indexOf('data:') === 0) targets.push([arr, i, v]);
+      });
+    };
+    collect(SITE, 'heroPortrait');
+    collect(SITE, 'resumeData');
+    if (SITE.aboutImages) {
+      ['moon', 'object', 'lego', 'group'].forEach((k) => collect(SITE.aboutImages, k));
+    }
+    (SITE.projects || []).forEach((p) => {
+      (p.col1 || []).forEach((v, i) => { if (v && typeof v === 'string' && v.indexOf('data:') === 0) targets.push([p.col1, i, v]); });
+      if (p.col2 && typeof p.col2 === 'string' && p.col2.indexOf('data:') === 0) targets.push([p, 'col2', p.col2]);
+      collectArr(p.gallery);
+    });
+    collectArr(SITE.marquee);
+    let idx = 0;
+    const next = () => {
+      while (idx < targets.length) {
+        const [obj, key, v] = targets[idx];
+        idx += 1;
+        const sz = v.length;
+        if (sz <= 420000) continue; // 已约 300KB 以内，跳过
+        compressToTarget(v, (out) => {
+          obj[key] = out;
+          next();
+        });
+        return;
+      }
+      cb();
+    };
+    next();
+  };
+  const saveLocal = () => {
+    try {
+      localStorage.setItem('ling-portfolio-config', JSON.stringify(payload()));
+      showToast('已保存到本机浏览器');
+    } catch (e) {
+      if (e && e.name === 'QuotaExceededError') {
+        compressAllForSave(() => {
+          try {
+            localStorage.setItem('ling-portfolio-config', JSON.stringify(payload()));
+            showToast('图片较大，已自动压缩后保存成功');
+          } catch (e2) {
+            if (e2 && e2.name === 'QuotaExceededError') {
+              showToast('保存失败：图片数据过大，超出本机浏览器存储配额（约 4MB）。请改用「导出配置JSON」保存完整配置，或删除部分已上传图片后再保存。');
+            } else {
+              showToast('保存失败：' + ((e2 && e2.message) || e2));
+            }
+          }
+        });
+      } else {
+        showToast('保存失败：' + ((e && e.message) || e));
+      }
+    }
+  };
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(payload(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ling-portfolio-config.json'; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const importJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('bad');
+          let merged = 0;
+          Object.keys(data).forEach((k) => { if (k in SITE) { SITE[k] = data[k]; merged += 1; } });
+          if (!merged) throw new Error('no fields');
+          refresh();
+          showToast('已导入配置，请点击「保存到本机」完成持久化');
+        } catch (err) {
+          showToast('导入失败：文件不是有效的配置JSON');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+  /* 部署：生成内嵌最新配置的完整 HTML，下载后拖到 Netlify Drop 覆盖即更新线上链接 */
+  const deployHTML = () => {
+    try {
+      const clone = document.documentElement.cloneNode(true);
+      const root = clone.querySelector('#root');
+      if (root) root.innerHTML = '';
+      /* 移除运行时 Babel 注入到 head 的编译产物脚本（下载文件打开时 Babel 会重新编译 text/babel 源码，
+         若不移除，该编译脚本会固化在 head、先于 React CDN 执行，导致 React is not defined） */
+      Array.from(clone.querySelectorAll('head script:not([src])')).forEach((s) => s.remove());
+      const toast = clone.querySelector('#demo-toast');
+      if (toast) toast.remove();
+      let html = '<!DOCTYPE html>\n' + clone.outerHTML;
+      const siteLiteral = JSON.stringify(SITE).replace(/</g, '\\u003c');
+      const re = /let SITE = \{[\s\S]*?\n\};/;
+      if (!re.test(html)) { showToast('生成失败：未找到配置段'); return; }
+      html = html.replace(re, 'let SITE = ' + siteLiteral + ';');
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'LING-ZPJ.html'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('已生成最新HTML，上传 Netlify Drop 即更新链接');
+    } catch (e) {
+      showToast('生成失败：' + ((e && e.message) || e));
+    }
+  };
+  const resetAll = () => { localStorage.removeItem('ling-portfolio-config'); localStorage.removeItem('ling-ball-settings'); location.reload(); };
+  const close = () => { setOpen(false); location.hash = ''; };
+
+  const inputCls = 'w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-sm text-white outline-none mb-1';
+  const tabs = [['basic', '基本'], ['images', '图片'], ['fonts', '字体'], ['services', '服务'], ['projects', '项目']];
+
+  const ImgInput = ({ label, value, onChange }) => {
+    const fileRef = useRef(null);
+    const onFile = (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      if (!/^image\//.test(file.type)) { showToast('请选择图片文件'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const url = reader.result;
+        const apply = (out) => { onChange(out); showToast('图片已上传'); };
+        if (url.length > 420000) compressToTarget(url, apply);
+        else apply(url);
+      };
+      reader.readAsDataURL(file);
+    };
+    return (
+      <div className="mb-1">
+        <label className="block text-white/70 text-xs mb-1">{label}</label>
+        <div className="flex items-center gap-2">
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
+          <button onClick={() => fileRef.current && fileRef.current.click()} className="px-2 py-1.5 rounded bg-white/15 text-white text-xs hover:bg-white/25">点击上传</button>
+          {value ? (
+            <button onClick={() => { onChange(''); showToast('已删除该图片'); }} className="px-2 py-1.5 rounded bg-red-500/20 text-red-300 text-xs hover:bg-red-500/30">删除</button>
+          ) : null}
+          {value ? (
+            <img
+              src={value}
+              alt=""
+              className="w-14 h-14 rounded border border-white/20 object-cover shrink-0"
+              onError={(e) => { e.currentTarget.style.opacity = 0.15; }}
+            />
+          ) : (
+            <span className="w-14 h-14 rounded border border-white/10 shrink-0 flex items-center justify-center text-white/25 text-xs">无图</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed right-0 top-0 z-[9999] h-full w-[380px] max-w-[92vw] bg-[#111] border-l border-white/15 overflow-y-auto p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-white font-bold text-lg">后台管理</h2>
+        <button onClick={close} className="text-white/60 hover:text-white text-2xl leading-none px-2">×</button>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`px-3 py-1.5 rounded-full text-xs transition-colors ${tab === id ? 'bg-[#d7e2ea] text-black' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'basic' && (
+        <div>
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2">导航与页面文字</h3>
+          <div className="grid grid-cols-4 gap-2 mb-1">
+            {(SITE.nav || []).map((n, i) => (
+              <input key={i} className={inputCls} value={n} onChange={(e) => setNav(i, e.target.value)} />
+            ))}
+          </div>
+          <label className="block text-white/70 text-xs mb-1 mt-3">Hero 大标题</label>
+          <input className={inputCls} value={SITE.heroTitle || ''} onChange={(e) => { SITE.heroTitle = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-3">Hero 左下小字</label>
+          <textarea className={inputCls} rows={2} value={SITE.heroSub} onChange={(e) => { SITE.heroSub = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-3">Contact 按钮文字 / 链接</label>
+          <div className="flex gap-2">
+            <input className={inputCls} value={SITE.contactLabel || ''} onChange={(e) => { SITE.contactLabel = e.target.value; refresh(); }} />
+            <input className={inputCls} value={SITE.contactUrl || ''} onChange={(e) => { SITE.contactUrl = e.target.value; refresh(); }} />
+          </div>
+          <label className="block text-white/70 text-xs mb-1 mt-3">About 板块标题</label>
+          <input className={inputCls} value={SITE.aboutHeading || ''} onChange={(e) => { SITE.aboutHeading = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-3">About 第一行</label>
+          <input className={inputCls} value={SITE.about1} onChange={(e) => { SITE.about1 = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-3">About 第二行</label>
+          <textarea className={inputCls} rows={3} value={SITE.about2} onChange={(e) => { SITE.about2 = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-3">重播按钮文字</label>
+          <input className={inputCls} value={SITE.replayLabel || ''} onChange={(e) => { SITE.replayLabel = e.target.value; refresh(); }} />
+          <div className="flex gap-2 mt-3">
+            <div className="flex-1">
+              <label className="block text-white/70 text-xs mb-1">Services 标题</label>
+              <input className={inputCls} value={SITE.servicesHeading || ''} onChange={(e) => { SITE.servicesHeading = e.target.value; refresh(); }} />
+            </div>
+            <div className="flex-1">
+              <label className="block text-white/70 text-xs mb-1">Projects 标题</label>
+              <input className={inputCls} value={SITE.projectsHeading || ''} onChange={(e) => { SITE.projectsHeading = e.target.value; refresh(); }} />
+            </div>
+          </div>
+          <label className="block text-white/70 text-xs mb-1 mt-3">Live Project 按钮文字</label>
+          <input className={inputCls} value={SITE.liveLabel || ''} onChange={(e) => { SITE.liveLabel = e.target.value; refresh(); }} />
+
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2 mt-6">联系页（自我介绍）</h3>
+          <label className="block text-white/70 text-xs mb-1">CONTACT 大标题</label>
+          <input className={inputCls} value={SITE.contactHeading || ''} onChange={(e) => { SITE.contactHeading = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-2">说明文字</label>
+          <textarea className={inputCls} rows={2} value={SITE.contactDesc || ''} onChange={(e) => { SITE.contactDesc = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-2">联系电话</label>
+          <input className={inputCls} value={SITE.contactPhone || ''} onChange={(e) => { SITE.contactPhone = e.target.value; refresh(); }} />
+          <label className="block text-white/70 text-xs mb-1 mt-2">联系邮箱</label>
+          <input className={inputCls} value={SITE.contactEmail || ''} onChange={(e) => { SITE.contactEmail = e.target.value; refresh(); }} />
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <input ref={resumeFileRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onResumeFile} />
+            <button onClick={() => resumeFileRef.current && resumeFileRef.current.click()} className="px-3 py-1.5 rounded bg-white/15 text-white text-xs hover:bg-white/25">上传简历 PDF</button>
+            {SITE.resumeData ? (
+              <button onClick={() => { SITE.resumeData = ''; refresh(); showToast('已清除上传的简历'); }} className="px-2 py-1.5 rounded border border-white/20 text-white/60 text-xs hover:text-white">清除</button>
+            ) : null}
+            <span className="text-white/40 text-xs">{SITE.resumeData ? '已上传' : '未上传（下载按钮将指向 assets/resume.pdf）'}</span>
+          </div>
+        </div>
+      )}
+
+      {tab === 'images' && (
+        <div>
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2">封面与装饰图片（填 URL，右侧即时预览）</h3>
+          <div className="mt-2" />
+          <ImgInput label="About 装饰图 · 左上（月亮）" value={SITE.aboutImages && SITE.aboutImages.moon} onChange={(v) => setAboutImg('moon', v)} />
+          <ImgInput label="About 装饰图 · 左下（物体）" value={SITE.aboutImages && SITE.aboutImages.object} onChange={(v) => setAboutImg('object', v)} />
+          <ImgInput label="About 装饰图 · 右上（积木）" value={SITE.aboutImages && SITE.aboutImages.lego} onChange={(v) => setAboutImg('lego', v)} />
+          <ImgInput label="About 装饰图 · 右下（组合）" value={SITE.aboutImages && SITE.aboutImages.group} onChange={(v) => setAboutImg('group', v)} />
+          <label className="block text-white/70 text-xs mb-1 mt-4">首页轮播图（共 {SITE.marquee ? SITE.marquee.length : 0} 张）</label>
+          {(SITE.marquee || []).map((m, i) => (
+            <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded px-2 py-1.5 mt-1">
+              {m && m.indexOf('data:') === 0 ? (
+                <img src={m} alt="" className="w-10 h-10 rounded border border-white/20 object-cover shrink-0" />
+              ) : (
+                <span className="w-10 h-10 rounded border border-white/10 shrink-0 flex items-center justify-center text-white/25 text-xs">图</span>
+              )}
+              <span className="flex-1 truncate text-white/60 text-xs">{m && m.indexOf('data:') === 0 ? ('已内嵌图片（base64，约 ' + ((m.length / 1024).toFixed(0)) + ' KB）') : m}</span>
+              <button onClick={() => { SITE.marquee = (SITE.marquee || []).filter((x) => x !== m); refresh(); showToast('已移除'); }} className="shrink-0 px-2 py-1 rounded bg-white/15 text-white text-xs hover:bg-white/25">移除</button>
+            </div>
+          ))}
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <input ref={marqueeFileRef} type="file" accept="image/*" multiple className="hidden" onChange={onMarqueeFile} />
+            <button onClick={() => marqueeFileRef.current && marqueeFileRef.current.click()} className="px-3 py-1.5 rounded bg-white/15 text-white text-xs hover:bg-white/25">批量上传图片</button>
+            <input value={marqueeUrl} onChange={(e) => setMarqueeUrl(e.target.value)} placeholder="或粘贴图片 URL（图床链接）" className={inputCls + ' flex-1 min-w-[180px]'} />
+            <button onClick={() => { const v = marqueeUrl.trim(); if (!v) { showToast('请先粘贴图片 URL'); return; } SITE.marquee.push(v); setMarqueeUrl(''); refresh(); showToast('已添加 URL 轮播图'); }} className="px-3 py-1.5 rounded bg-white/15 text-white text-xs hover:bg-white/25">添加 URL</button>
+            <span className="text-white/40 text-xs">URL 不占浏览器配额，可无限添加</span>
+          </div>
+        </div>
+      )}
+
+      {tab === 'fonts' && (
+        <div>
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2">全站字体</h3>
+          <label className="block text-white/70 text-xs mb-1">字体（切换后即时生效）</label>
+          <select className={inputCls} value={SITE.fontFamily || 'Kanit'} onChange={(e) => setFont(e.target.value)}>
+            {fontOptions().map((o) => (
+              <option key={o.family} value={o.family}>{o.label}</option>
+            ))}
+          </select>
+          <p className="text-white/50 text-xs mt-2 leading-relaxed">
+            中英文混排建议选择「思源黑体」；拉丁文字可选 Kanit / Space Grotesk / Montserrat / Poppins / Inter。
+            字体选择随配置一起保存、导出。
+          </p>
+        </div>
+      )}
+
+      {tab === 'services' && (
+        <div>
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2">服务卡片</h3>
+          {SITE.services.map((s, i) => (
+            <div key={i} className="mb-3 p-2 rounded bg-white/5">
+              <input className={inputCls} placeholder="编号" value={s.num} onChange={(e) => setService(i, 'num', e.target.value)} />
+              <input className={inputCls} placeholder="名称" value={s.name} onChange={(e) => setService(i, 'name', e.target.value)} />
+              <textarea className={inputCls} rows={2} placeholder="描述" value={s.desc} onChange={(e) => setService(i, 'desc', e.target.value)} />
+              <button onClick={() => delService(i)} className="mt-1 text-red-400 text-xs">删除该服务</button>
+            </div>
+          ))}
+          <button onClick={addService} className="text-[#9fd3ff] text-xs">+ 添加服务</button>
+        </div>
+      )}
+
+      {tab === 'projects' && (
+        <div>
+          <h3 className="text-white/80 text-xs uppercase tracking-widest mb-2">项目卡片</h3>
+          {SITE.projects.map((p, i) => (
+            <div key={i} className="mb-3 p-2 rounded bg-white/5">
+              <div className="flex gap-2">
+                <input className={inputCls} placeholder="编号" value={p.num} onChange={(e) => setProject(i, 'num', e.target.value)} />
+                <input className={inputCls} placeholder="分类" value={p.category} onChange={(e) => setProject(i, 'category', e.target.value)} />
+              </div>
+              <input className={inputCls} placeholder="项目名称" value={p.name} onChange={(e) => setProject(i, 'name', e.target.value)} />
+              <label className="block text-white/60 text-xs mb-1 mt-2">项目描述（详情弹窗文字）</label>
+              <textarea className={inputCls + ' min-h-[64px] resize-y'} placeholder="项目描述（详情弹窗展示）" value={p.desc || ''} onChange={(e) => setProject(i, 'desc', e.target.value)} />
+              <label className="block text-white/60 text-xs mb-1 mt-2">首页卡片预览图</label>
+              <ImgInput label="左列图 1" value={p.col1[0]} onChange={(v) => setProjectImg(i, 0, v)} />
+              <ImgInput label="左列图 2" value={p.col1[1]} onChange={(v) => setProjectImg(i, 1, v)} />
+              <ImgInput label="右侧大图" value={p.col2} onChange={(v) => setProject(i, 'col2', v)} />
+              <label className="block text-white/60 text-xs mb-1 mt-2">详情画廊图（共 {(p.gallery || []).length} 张）</label>
+              {(p.gallery || []).map((g, gi) => (
+                <div key={gi} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded px-2 py-1.5 mt-1">
+                  {g && g.indexOf('data:') === 0 ? (
+                    <img src={g} alt="" className="w-10 h-10 rounded border border-white/20 object-cover shrink-0" />
+                  ) : (
+                    <span className="w-10 h-10 rounded border border-white/10 shrink-0 flex items-center justify-center text-white/25 text-xs">图</span>
+                  )}
+                  <span className="flex-1 truncate text-white/60 text-xs">{g && g.indexOf('data:') === 0 ? ('已内嵌图片（base64，约 ' + ((g.length / 1024).toFixed(0)) + ' KB）') : g}</span>
+                  <button onClick={() => { SITE.projects[i].gallery = (SITE.projects[i].gallery || []).filter((x) => x !== g); refresh(); }} className="shrink-0 px-2 py-1 rounded bg-white/15 text-white text-xs hover:bg-white/25">移除</button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 mt-1">
+                <input id={'gfile-' + i} type="file" accept="image/*" multiple className="hidden" onChange={(e) => onGalleryFile(i, e)} />
+                <button onClick={() => { const el = document.getElementById('gfile-' + i); if (el) el.click(); }} className="px-3 py-1.5 rounded bg-white/15 text-white text-xs hover:bg-white/25">批量上传画廊图</button>
+                <span className="text-white/40 text-xs">可多选，自动追加</span>
+              </div>
+              <button onClick={() => delProject(i)} className="mt-1 text-red-400 text-xs">删除该项目</button>
+            </div>
+          ))}
+          <button onClick={addProject} className="text-[#9fd3ff] text-xs">+ 添加项目</button>
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-6 flex-wrap">
+        <button onClick={saveLocal} className="bg-[#d7e2ea] text-black text-xs px-3 py-2 rounded">保存到本机</button>
+        <button onClick={deployHTML} className="bg-[#9478FF]/25 text-[#cfd4ff] text-xs px-3 py-2 rounded border border-[#9478FF]/50">生成最新HTML</button>
+        <button onClick={exportJSON} className="border border-white/30 text-white text-xs px-3 py-2 rounded">导出配置JSON</button>
+        <button onClick={importJSON} className="border border-white/30 text-white text-xs px-3 py-2 rounded">导入配置JSON</button>
+        <button onClick={resetAll} className="border border-white/30 text-white/60 text-xs px-3 py-2 rounded">恢复默认</button>
+      </div>
+    </div>
+  );
+};
+
+
+/* ============================================================
+   ContactSection — 结尾自我介绍/联系页（浅米色 CONTACT 排版）
+   ============================================================ */
+const ContactSection = () => {
+  const copy = (val, label) => {
+    const done = () => showToast(label + ' 已复制');
+    const fallback = () => {
+      const ta = document.createElement('textarea');
+      ta.value = val;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (err) { showToast('复制失败，请手动复制'); }
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(done, fallback);
+    } else fallback();
+  };
+  return (
+    <section id="contact" className="relative bg-[#0C0C0C] text-[#D7E2EA] px-6 md:px-10 py-24 sm:py-32 md:py-40 overflow-x-clip">
+      {/* 顶部发丝线 + 品牌辉光 */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#646973]/60 to-transparent" aria-hidden="true" />
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 h-[420px] w-[70%] pointer-events-none" aria-hidden="true" style={{ background: 'radial-gradient(60% 60% at 50% 0%, rgba(100,105,115,0.18) 0%, transparent 70%)' }} />
+      <div className="relative max-w-[1320px] mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-16">
+        <div className="max-w-[620px]">
+          <FadeIn as="p" delay={0} y={16} className="text-[#646973] font-medium uppercase tracking-[0.35em] text-sm mb-6">CONTACT</FadeIn>
+          <FadeIn as="h2" delay={0.1} y={24} className="hero-heading font-black uppercase leading-[1.05] text-[clamp(2.6rem,7vw,6.5rem)]">{SITE.contactHeading || '一起做一个更会的想法。'}</FadeIn>
+          <FadeIn as="p" delay={0.2} y={16} className="mt-6 text-[#D7E2EA]/60 text-lg sm:text-xl leading-relaxed max-w-[460px]">{SITE.contactDesc || '欢迎联系求职机会、项目合作或作品集交流。'}</FadeIn>
+        </div>
+        <div className="flex flex-col gap-4 w-full max-w-[520px]">
+          <FadeIn delay={0.15} y={20}>
+            <div className="flex items-center justify-between gap-4 rounded-full border-2 border-[#646973]/60 bg-white/5 px-6 sm:px-8 py-4 sm:py-5">
+              <span className="text-base sm:text-lg tracking-wide truncate text-[#D7E2EA]">{SITE.contactPhone || '13253528395'}</span>
+              <button onClick={() => copy(SITE.contactPhone || '13253528395', '电话')} className="shrink-0 text-sm sm:text-base text-[#BBCCD7] underline underline-offset-4 decoration-[#BBCCD7]/40 hover:decoration-[#BBCCD7] transition-colors">复制电话</button>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.25} y={20}>
+            <div className="flex items-center justify-between gap-4 rounded-full border-2 border-[#646973]/60 bg-white/5 px-6 sm:px-8 py-4 sm:py-5">
+              <span className="text-base sm:text-lg tracking-wide truncate text-[#D7E2EA]">{SITE.contactEmail || '2196618702@qq.com'}</span>
+              <button onClick={() => copy(SITE.contactEmail || '2196618702@qq.com', '邮箱')} className="shrink-0 text-sm sm:text-base text-[#BBCCD7] underline underline-offset-4 decoration-[#BBCCD7]/40 hover:decoration-[#BBCCD7] transition-colors">复制邮箱</button>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.35} y={20}>
+            <a
+              href={SITE.resumeData || 'assets/resume.pdf'}
+              download="resume.pdf"
+              onClick={() => { if (!SITE.resumeData) showToast('如未开始下载，请在后台「基本 → 联系页」上传简历'); }}
+              className="flex items-center justify-between gap-4 rounded-full border-2 border-[#646973]/60 bg-white/5 px-6 sm:px-8 py-4 sm:py-5 hover:bg-white/10 transition-colors"
+            >
+              <span className="text-base sm:text-lg tracking-wide text-[#D7E2EA]">下载简历</span>
+              <span className="shrink-0 text-sm sm:text-base text-[#BBCCD7] underline underline-offset-4 decoration-[#BBCCD7]/40">{SITE.resumeData ? '已上传' : 'PDF'}</span>
+            </a>
+          </FadeIn>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+/* ============================================================
+   BackToTop — 主页右下角返回顶部箭头：向下翻过 50% 淡入出现，点击平滑回顶
+   ============================================================ */
+const BackToTop = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      setShow(window.scrollY > doc.scrollHeight * 0.5);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <button
+      type="button"
+      aria-label="back to top"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className={`fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full border-2 border-[#646973]/70 bg-[#0C0C0C]/85 backdrop-blur grid place-items-center text-[#D7E2EA] shadow-[0_10px_30px_rgba(0,0,0,.5)] transition-all duration-300 hover:border-[#BBCCD7] hover:bg-white/10 ${show ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-3 pointer-events-none'}`}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M4 11l5-5 5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+};
+
+/* ============================================================
+   App
+   ============================================================ */
+const App = () => {
+  const [route, setRoute] = useState(readRoute);
+  const [, setTick] = useState(0);
+
+  const prevRoute = useRef(readRoute());
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = readRoute();
+      const prev = prevRoute.current;
+      prevRoute.current = next;
+      setRoute(next);
+      if (next.type === 'project') {
+        window.scrollTo(0, 0);
+      } else if (prev.type === 'project') {
+        // 点 X / 浏览器返回：恢复到进入详情前的首页滚动位置
+        let tries = 0;
+        const restore = () => {
+          if (tries < 10) { tries += 1; window.scrollTo(0, savedScrollY); requestAnimationFrame(restore); }
+          else savedScrollY = 0;
+        };
+        requestAnimationFrame(restore);
+      }
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const projectList = SITE.projects || [];
+  return (
+    <div className="bg-[#0C0C0C] overflow-x-clip">
+      {route.type === 'project' && projectList[route.index] ? (
+        <ProjectDetail project={projectList[route.index]} />
+      ) : (
+        <main className="bg-[#0C0C0C] overflow-x-clip">
+          <HeroSection />
+          <MarqueeSection />
+          <AboutSection />
+          <ServicesSection />
+          <ProjectsSection />
+          <ContactSection />
+          <BackToTop />
+        </main>
+      )}
+      {/* 后台面板恒定挂载：切换页面路由（如打开 PROJECT 详情）时不退出 */}
+      <AdminPanel onRefresh={() => setTick((t) => t + 1)} />
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
